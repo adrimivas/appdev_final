@@ -10,11 +10,20 @@ export default function Header() {
                     <NavLink to="/" end className={({ isActive }) => isActive ? "active" : ""}>
                         Home
                     </NavLink>
-                    <NavLink to="/constants" className={({ isActive }) => isActive ? "active" : ""}>
-                        Variables/Inputs
+                    <NavLink to="/login" className={({ isActive }) => isActive ? "active" : ""}>
+                        Login
                     </NavLink>
-                    <NavLink to="/example" className={({ isActive }) => isActive ? "active" : ""}>
-                        Example Page
+                    <NavLink to="/income" className={({ isActive }) => isActive ? "active" : ""}>
+                        Income
+                    </NavLink>
+                    <NavLink to="/investments" className={({ isActive }) => isActive ? "active" : ""}>
+                        Investments
+                    </NavLink>
+                    <NavLink to="/expenses" className={({ isActive }) => isActive ? "active" : ""}>
+                        Expenses
+                    </NavLink>
+                    <NavLink to="/links" className={({ isActive }) => isActive ? "active" : ""}>
+                        Links
                     </NavLink>
                     
                 </nav>

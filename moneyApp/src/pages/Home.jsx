@@ -18,7 +18,7 @@ export default function Home() {
             <div>
               <h1>Money App</h1>
               <p>
-                Edit <code>../App.jsx</code> and save to test
+                Edit <code>..src/pages/Home.jsx</code> and save to test
               </p>
             </div>
             <button
