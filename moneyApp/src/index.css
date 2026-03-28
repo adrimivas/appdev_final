@@ -2,6 +2,11 @@
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
+  --surface: #ffffff;
+  --surface-soft: #eef3f8;
+  --muted: #475569;
+  --primary: #b690f5;
+  --primary-dark: #075e4e;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
@@ -30,6 +35,15 @@
   }
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html,body {
+  min-height: 100%;
+  margin: 0;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
@@ -51,7 +65,9 @@
 }
 
 body {
-  margin: 0;
+  font-family: Inter, system-ui, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 #root {
@@ -64,6 +80,100 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  padding: 2rem 0;
+}
+
+.container {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+}
+
+.site-header{
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 1%;
+  padding-right: 1%;
+  gap: 1rem;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.nav-links a {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-links a:hover {
+  background: var(--surface-soft);
+  color: var(--primary);
+  border-color: var(--border);
+}
+
+.nav-links a.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.page {
+  width: min(1100px, 92%);
+  margin: 0 auto;
+  padding: 3rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.site-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+.footer-inner {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: ver(--muted);
 }
 
 h1,
