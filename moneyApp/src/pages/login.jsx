@@ -1,9 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate(); 
+  const location = useLocation();
+
+  // display success message after account creation
+  useEffect(() => {
+    if (location.state?.message) {
+      setMessage(location.state.message);
+
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +51,21 @@ function Login() {
   return (
     <div>
       <h1>Login</h1>
+      {/* success message styling */}
+{message && (
+  <div
+    style={{
+      backgroundColor: "#d4edda",
+      color: "#155724",
+      padding: "10px",
+      borderRadius: "5px",
+      marginBottom: "10px",
+      maxWidth: "300px"
+    }}
+  >
+    {message}
+  </div>
+)}
 
       <form onSubmit={handleSubmit}>
         <input
@@ -54,8 +86,11 @@ function Login() {
 
         <button type="submit">Login</button>
       </form>
-
-      <p>{message}</p>
+          <br />
+      <button type="button" onClick={() => navigate("/create-account")}>
+        Create Account
+      </button>
+      
     </div>
   );
 }

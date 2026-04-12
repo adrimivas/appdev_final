@@ -7,6 +7,7 @@ import Income from "./pages/income";
 import Investments from "./pages/investments";
 import Expenses from "./pages/expenses";
 import Links from "./pages/links";
+import CreateAcc from "./pages/createAcc";
 // Add additional pages from the pages file like above
 // Include them as a path under children
 // Currently, links are used in the header
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: "Income", element: <Income />},
       { path: "Investments", element: <Investments />},
       { path: "Expenses", element: <Expenses />},
+      { path: "create-account", element: <CreateAcc /> },
       { path: "Links", element: <Links /> },
       
     ],
