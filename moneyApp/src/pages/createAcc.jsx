@@ -449,11 +449,7 @@ function CreateAcc() {
                         type="number"
                         value={expense.current_balance}
                         onChange={(e) =>
-                          handleExpenseChange(
-                            index,
-                            "current_balance",
-                            e.target.value
-                          )
+                          handleExpenseChange(index, "current_balance", e.target.value)
                         }
                       />
                       <br />
@@ -466,11 +462,7 @@ function CreateAcc() {
                         step="0.01"
                         value={expense.interest_rate}
                         onChange={(e) =>
-                          handleExpenseChange(
-                            index,
-                            "interest_rate",
-                            e.target.value
-                          )
+                          handleExpenseChange(index, "interest_rate", e.target.value)
                         }
                       />
                       <br />
@@ -482,11 +474,7 @@ function CreateAcc() {
                         type="number"
                         value={expense.minimum_payment}
                         onChange={(e) =>
-                          handleExpenseChange(
-                            index,
-                            "minimum_payment",
-                            e.target.value
-                          )
+                          handleExpenseChange(index, "minimum_payment", e.target.value)
                         }
                       />
                       <br />
@@ -498,11 +486,7 @@ function CreateAcc() {
                         type="number"
                         value={expense.current_payment}
                         onChange={(e) =>
-                          handleExpenseChange(
-                            index,
-                            "current_payment",
-                            e.target.value
-                          )
+                          handleExpenseChange(index, "current_payment", e.target.value)
                         }
                       />
                       <br />

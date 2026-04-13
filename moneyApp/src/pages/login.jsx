@@ -6,10 +6,9 @@ function Login() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const location = useLocation();
 
-  // display success message after account creation
   useEffect(() => {
     if (location.state?.message) {
       setMessage(location.state.message);
@@ -29,43 +28,51 @@ function Login() {
       const response = await fetch("http://localhost:5001/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      console.log("Login response:", text);
+
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { message: text || "Invalid server response" };
+      }
 
       if (response.ok) {
         localStorage.setItem("username", data.user.username);
-        window.location.href = "/profile";
+        navigate("/profile");
       } else {
-        setMessage(data.message);
+        setMessage(data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      setMessage("Something went wrong");
+      setMessage(`Login failed: ${error.message}`);
     }
   };
 
   return (
     <div>
       <h1>Login</h1>
-      {/* success message styling */}
-{message && (
-  <div
-    style={{
-      backgroundColor: "#d4edda",
-      color: "#155724",
-      padding: "10px",
-      borderRadius: "5px",
-      marginBottom: "10px",
-      maxWidth: "300px"
-    }}
-  >
-    {message}
-  </div>
-)}
+
+      {message && (
+        <div
+          style={{
+            backgroundColor: "#d4edda",
+            color: "#155724",
+            padding: "10px",
+            borderRadius: "5px",
+            marginBottom: "10px",
+            maxWidth: "300px",
+          }}
+        >
+          {message}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <input
@@ -73,24 +80,29 @@ function Login() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
         />
-        <br /><br />
+        <br />
+        <br />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
-        <br /><br />
+        <br />
+        <br />
 
         <button type="submit">Login</button>
       </form>
-          <br />
+
+      <br />
+
       <button type="button" onClick={() => navigate("/create-account")}>
         Create Account
       </button>
-      
     </div>
   );
 }
