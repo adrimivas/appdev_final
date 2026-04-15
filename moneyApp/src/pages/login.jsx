@@ -44,7 +44,7 @@ function Login() {
       }
 
       if (response.ok) {
-        localStorage.setItem("username", data.user.username);
+        localStorage.setItem("user", JSON.stringify(data.user));
         navigate("/profile");
       } else {
         setMessage(data.message || "Login failed");

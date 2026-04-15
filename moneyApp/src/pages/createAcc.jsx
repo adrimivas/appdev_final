@@ -324,7 +324,7 @@ function CreateAcc() {
               <br />
               <br />
 
-              <label>Date of Birth (optional)</label>
+              <label>Date of Birth </label>
               <br />
               <input
                 type="date"
@@ -376,7 +376,7 @@ function CreateAcc() {
                     textAlign: "center",
                   }}
                 >
-                  <label>Expense Name</label>
+                  <label>Custom Expense Name</label>
                   <br />
                   <input
                     type="text"
@@ -388,7 +388,7 @@ function CreateAcc() {
                   <br />
                   <br />
 
-                  <label>Amount</label>
+                  <label>Total Amount</label>
                   <br />
                   <input
                     type="number"
@@ -455,7 +455,7 @@ function CreateAcc() {
                       <br />
                       <br />
 
-                      <label>Interest Rate</label>
+                      <label>Interest Rate (%)</label>
                       <br />
                       <input
                         type="number"
