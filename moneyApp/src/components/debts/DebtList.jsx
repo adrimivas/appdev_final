@@ -1,0 +1,18 @@
+export default function DebtList({ debts, onSelect }) {
+    return (
+        <div>
+            <h2>All Debts</h2>
+            {debts.length === 0 && <p>No debts found.</p>}
+            {debts.map(debt => {
+                const latestPayment = debt.payments[debt.payments.length - 1];
+                return (
+                    <div key={debt._id} onClick={() => onSelect(debt)}>
+                        <p>{debt.name}</p>
+                        <p>{new Date(debt.createdAt).toLocaleDateString()}</p>
+                        <p>-${(latestPayment?.amount || debt.minimum_payment).toFixed(2)}/month</p>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}

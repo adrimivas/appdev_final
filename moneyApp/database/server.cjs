@@ -93,6 +93,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
+const debtRoutes = require("../src/routes/debts.js");
+app.use("/debts", debtRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
