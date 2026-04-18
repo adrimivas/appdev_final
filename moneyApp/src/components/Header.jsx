@@ -1,15 +1,15 @@
 import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Header() {
-    const isLoggedIn = !!localStorage.getItem("user");
+    const isLoggedIn = !!localStorage.getItem("userId");
     const navigate = useNavigate();
 
     console.log("HEADER RENDERING");
     console.log("isLoggedIn:", isLoggedIn);
-    console.log("stored user:", localStorage.getItem("user"));
+    console.log("stored user:", localStorage.getItem("userId"));
 
     const handleLogout = () => {
-        localStorage.removeItem("user");
+        localStorage.removeItem("userId");
         navigate("/");
     };
 

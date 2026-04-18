@@ -34,7 +34,7 @@ function Login() {
       });
 
       const text = await response.text();
-      console.log("Login response:", text);
+      console.log("Login raw response:", text);
 
       let data = {};
       try {
@@ -43,12 +43,13 @@ function Login() {
         data = { message: text || "Invalid server response" };
       }
 
-      if (response.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/profile");
-      } else {
-        setMessage(data.message || "Login failed");
-      }
+     if (response.ok) {
+  const userToStore = data.user || data;
+  localStorage.setItem("userId", data.user.id);
+navigate("/profile");
+} else {
+  setMessage(data.message || "Login failed");
+}
     } catch (error) {
       console.error("Login error:", error);
       setMessage(`Login failed: ${error.message}`);
