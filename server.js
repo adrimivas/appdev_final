@@ -1,10 +1,11 @@
+const bcrypt = require("bcrypt");
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -73,6 +74,8 @@ async function startServer() {
           (item) => item.category === "debt"
         );
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const newUser = {
           username: username.trim(),
           name: {
@@ -80,7 +83,7 @@ async function startServer() {
             last: name.last.trim(),
           },
           email: email.trim().toLowerCase(),
-          password, // later replace with bcrypt hash
+          password: hashedPassword,
           income: Number(income) || 0,
           expenses: {
             monthly: nonDebtExpenses,
@@ -132,9 +135,9 @@ async function startServer() {
             .json({ message: "Username and password are required" });
         }
 
-        const user = await usersCollection.findOne({ username, password });
+        const user = await usersCollection.findOne({ username });
 
-        if (!user) {
+        if (!user || !(await bcrypt.compare(password, user.password))) {
           return res
             .status(401)
             .json({ message: "Invalid username or password" });
