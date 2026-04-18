@@ -1,4 +1,4 @@
-import { calculatePayoffMonths } from "../utils/debtCalc";
+import { calculatePayoffMonths } from "../../utils/debtCalc";
 
 export default function DebtDetail({ debt, goBack }) {
     const latestPayment = debt.payments[debt.payments.length - 1];

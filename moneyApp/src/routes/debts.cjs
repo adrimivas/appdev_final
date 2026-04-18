@@ -1,6 +1,6 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
-const connectDB = require("../connect.cjs");
+const connectDB = require("../../database/connect.cjs");
 
 const router = express.Router();
 

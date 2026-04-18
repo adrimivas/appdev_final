@@ -82,6 +82,7 @@ app.post("/login", async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       user: {
+        id: user._id,
         username: user.username
       }
     });
@@ -93,7 +94,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-const debtRoutes = require("../src/routes/debts.js");
+const debtRoutes = require("../src/routes/debts.cjs");
 app.use("/debts", debtRoutes);
 
 app.listen(PORT, () => {
