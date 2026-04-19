@@ -4,7 +4,8 @@ export default function DebtList({ debts, onSelect }) {
             <h2>All Debts</h2>
             {debts.length === 0 && <p>No debts found.</p>}
             {debts.map(debt => {
-                const latestPayment = debt.payments[debt.payments.length - 1];
+                const payments = debt.payments || [];
+                const latestPayment = payments[payments.length - 1];
                 return (
                     <div key={debt._id} onClick={() => onSelect(debt)}>
                         <p>{debt.name}</p>

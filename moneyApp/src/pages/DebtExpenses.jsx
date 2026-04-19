@@ -8,10 +8,10 @@ export default function Expenses() {
   const [debts, setDebts] = useState([]);
   const [selectedDebt, setSelectedDebt] = useState(null);
 
-  const fetchDebts = (id) => {
+  const fetchDebts = async (id) => {
     const activeId = id || userId;
     if(!activeId) return;
-    fetch(`http://localhost:5000/debts/${activeId}`)
+    fetch(`http://localhost:5000/api/debts/${activeId}`)
       .then(res => res.json())
       .then(data => setDebts(data))
       .catch(err => console.error("Fetch error:", err));
@@ -19,9 +19,10 @@ export default function Expenses() {
 
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem("user"));
-    if(loggedInUser && loggedInUser.id) {
-      setUserId(loggedInUser.id);
-      fetchDebts(loggedInUser.id);
+    const actualId = loggedInUser?.id || loggedInUser?._id;
+    if(actualId) {
+      setUserId(actualId);
+      fetchDebts(actualId);
     }
   }, []);
 

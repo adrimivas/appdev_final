@@ -3,6 +3,9 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const connectDB = require("./connect.cjs");
 
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+
 const app = express();
 const PORT = 5000;
 
@@ -95,7 +98,7 @@ app.post("/login", async (req, res) => {
 });
 
 const debtRoutes = require("../src/routes/debts.cjs");
-app.use("/debts", debtRoutes);
+app.use("/api/debts", debtRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

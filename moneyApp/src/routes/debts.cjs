@@ -10,8 +10,12 @@ router.get("/:userId", async (req, res) => {
     const db = await connectDB();
     const debts = await db
       .collection("debts")
-      .find({ user_id: new ObjectId(userId) })
-      .toArray();
+      .find({ 
+        $or: [
+          {user_id: userId },
+          { user_id: new ObjectId(userId) }
+        ]
+      }).toArray();
 
     res.status(200).json(debts);
   } catch (err) {

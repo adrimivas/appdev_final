@@ -8,6 +8,7 @@ export default function DebtDetail({ debt, goBack }) {
         debt.interest_rate,
         paymentAmount
     );
+    const totalInterest = totalPaid - debt.current_balance;
     const years = Math.floor(months / 12);
     const remainingMonths = months % 12;
     return (
@@ -16,7 +17,7 @@ export default function DebtDetail({ debt, goBack }) {
             <h2>{debt.name}</h2>
             <p>Balance: ${debt.current_balance.toFixed(2)}</p>
             <p>Original: ${debt.original_amount.toFixed(2)}</p>
-            <p>Interest: {(debt.interest_rate * 100).toFixed(2)}%</p>
+            <p>Interest: {(debt.interest_rate).toFixed(2)}%</p>
             <p>Minimum Payment: ${debt.minimum_payment.toFixed(2)}</p>
             <p>Current Payment: ${paymentAmount.toFixed(2)}</p>
             <h3>Payoff Time</h3>
@@ -28,6 +29,8 @@ export default function DebtDetail({ debt, goBack }) {
             </p>
             <h3>Total Paid</h3>
             <p>${totalPaid.toFixed(2)}</p>
+            <h3>Total Interest</h3>
+            <p>${totalInterest.toFixed(2)}</p>
         </div>
     );
 }

@@ -8,9 +8,17 @@ export default function AddDebt({ userId, refresh }) {
         interest_rate: "",
         minimum_payment: ""
     });
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm({ ...form, [name]: value });
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
-                const debtData = {
+        if (!form.type) {
+            alert("Please select a debt type");
+            return;
+        }
+        const debtData = {
             ...form,
             user_id: userId,
             original_amount: Number(form.original_amount),
@@ -43,32 +51,46 @@ export default function AddDebt({ userId, refresh }) {
     return (
         <form onSubmit={handleSubmit}>
             <input
+                name="name"
                 placeholder="Name"
                 value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
+                onChange={handleChange}
             />
-            <input
-                placeholder="Type"
+            <select
+                name="type"
                 value={form.type}
-                onChange={e => setForm({ ...form, type: e.target.value })}
-            />
+                onChange={handleChange}
+                required
+            >
+                <option value="" disabled>Select Debt Type</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Student Loan">Student Loan</option>
+                <option value="Car Loan">Car Loan</option>
+                <option value="Mortgage">Mortgage</option>
+                <option value="Personal Loan">Personal Loan</option>
+                <option value="Medical Debt">Medical Debt</option>
+                <option value="Other">Other</option>
+            </select>
             <input
+                name="original_amount"
                 type="number"
                 placeholder="Amount"
                 value={form.original_amount}
-                onChange={e => setForm({ ...form, original_amount: e.target.value })}
+                onChange={handleChange}
             />
             <input
+                name="interest_rate"
                 type="number"
                 placeholder="Interest Rate"
                 value={form.interest_rate}
-                onChange={e => setForm({ ...form, interest_rate: e.target.value })}
+                onChange={handleChange}
             />
             <input
+                name="minimum_payment"
                 type="number"
                 placeholder="Minimum Payment"
                 value={form.minimum_payment}
-                onChange={e => setForm({ ...form, minimum_payment: e.target.value })}
+                onChange={handleChange}
             />
             <button type="submit">Add Debt</button>
         </form>
