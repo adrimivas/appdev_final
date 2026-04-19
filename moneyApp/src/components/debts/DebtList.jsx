@@ -1,7 +1,7 @@
 export default function DebtList({ debts, onSelect }) {
     return (
         <div>
-            <h2>All Debts</h2>
+            <h3>All Debts</h3>
             {debts.length === 0 && <p>No debts found.</p>}
             {debts.map(debt => {
                 const payments = debt.payments || [];
