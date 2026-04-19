@@ -100,6 +100,9 @@ app.post("/login", async (req, res) => {
 const debtRoutes = require("../src/routes/debts.cjs");
 app.use("/api/debts", debtRoutes);
 
+const expenseRoutes = require("../src/routes/expenses.cjs");
+app.use("/api/expenses", expenseRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
