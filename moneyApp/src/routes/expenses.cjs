@@ -30,4 +30,25 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+router.post("/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { name, amount, type, date } = req.body;
+        const db = await connectDB();
+        const newEntry = {
+            name,
+            amount: parseFloat(amount),
+            date: date ? new Date(date) : new Date()
+        };
+        const targetField = type === "recurring" ? "expenses.recurring" : "expenses.one_time";
+        await db.collection("users").updateOne(
+            { _id: new ObjectId(userId) },
+            { $push: { [targetField]: newEntry }}
+        );
+        res.status(200).json({ message: "Expense added successfully" });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to add expense" });
+    }
+});
+
 module.exports = router;
