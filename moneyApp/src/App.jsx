@@ -9,6 +9,7 @@ import Expenses from "./pages/DebtExpenses";
 import Links from "./pages/links";
 import CreateAcc from "./pages/createAcc";
 import Profile from "./pages/profile";
+import CalculatorPage from "./pages/calc";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: "expenses", element: <Expenses /> },
       { path: "create-account", element: <CreateAcc /> },
       { path: "links", element: <Links /> },
+      { path: "calculator", element: <CalculatorPage /> },
       { path: "profile", element: <Profile /> },
     ],
   },
