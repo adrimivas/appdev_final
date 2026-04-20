@@ -1,4 +1,4 @@
-export default function ExpenseList({ expenses }) {
+export default function ExpenseList({ expenses, onSelect }) {
   if (!expenses) return <p>Loading expenses...</p>;
 
   const currentMonthStr = new Date().toISOString().slice(0, 7);
@@ -8,8 +8,9 @@ export default function ExpenseList({ expenses }) {
   const cardStyle = {
     border: "1px solid white",
     borderRadius: "8px",
-    padding: "10px",
-    width: "150px",
+    padding: "15px",
+    width: "180px",
+    cursor: "pointer",
     display: "flex",
     flexDirection: "column",
     gap: "5px"
@@ -28,7 +29,7 @@ export default function ExpenseList({ expenses }) {
         <div style={containerStyle}>
             {currentMonthData?.items.length > 0 ? (
                 currentMonthData.items.map((item, i) => (
-                    <div key={i} style={cardStyle}>
+                    <div key={i} style={cardStyle} onClick={() => onSelect({ ...item, category: 'monthly' })}>
                         <strong>{item.name}</strong>
                         <span>${item.amount.toFixed(2)}</span>
                     </div>
@@ -43,7 +44,7 @@ export default function ExpenseList({ expenses }) {
         <div style={containerStyle}>
             {expenses.one_time?.length > 0 ? (
                 expenses.one_time.map((exp, i) => (
-                    <div key={i} style={cardStyle}>
+                    <div key={i} style={cardStyle} onClick={() => onSelect({ ...exp, category: 'one_time' })}>
                         <strong>{exp.name}</strong>
                         <span>${exp.amount.toFixed(2)}</span>
                         <small>{new Date(exp.date).toLocaleDateString()}</small>

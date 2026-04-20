@@ -4,11 +4,13 @@ import DebtDetail from "../components/debts/DebtDetail";
 import AddDebt from "../components/debts/AddDebt";
 import ExpenseList from "../components/expenses/ExpenseList";
 import AddExpense from "../components/expenses/AddExpense";
+import ExpenseDetail from "../components/expenses/ExpenseDetail";
 
 export default function Expenses() {
   const [userId, setUserId] = useState(null);
   const [debts, setDebts] = useState([]);
   const [selectedDebt, setSelectedDebt] = useState(null);
+  const [selectedExpense, setSelectedExpense] = useState(null);
   const [expenses, setExpenses] = useState(null);
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
@@ -41,9 +43,24 @@ export default function Expenses() {
 
   return (
     <div>
-      <h1>All Expenses & Debts</h1>
-      {!selectedDebt ? (
+      {selectedDebt ? (
+        <DebtDetail
+          debt={selectedDebt}
+          userId={userId}
+          goBack={() => setSelectedDebt(null)}
+          refresh={() => { fetchData(userId); setSelectedDebt(null); }}
+        />
+      ) :
+      selectedExpense ? (
+        <ExpenseDetail
+          expense={selectedExpense}
+          userId={userId}
+          goBack={() => setSelectedExpense(null)}
+          refresh={() => { fetchData(userId); setSelectedExpense(null); }}
+        />
+      ) : (
         <>
+          <h1>All Expenses & Debts</h1>
           <section style={{ marginBottom: "40px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
               <h2>Debts</h2>
@@ -73,11 +90,9 @@ export default function Expenses() {
                 refresh={() => { fetchData(userId); setShowExpenseForm(false); }}
               />
             )}
-            <ExpenseList expenses={expenses} />
+            <ExpenseList expenses={expenses} onSelect={setSelectedExpense} />
           </section>
         </>
-      ) : (
-        <DebtDetail debt={selectedDebt} goBack={() => setSelectedDebt(null)} />
       )}
     </div>
   );
