@@ -1,9 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setMessage(location.state.message);
+
+      const timer = setTimeout(() => {
+        setMessage("");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,22 +28,30 @@ function Login() {
       const response = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      console.log("Login response:", text);
+
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { message: text || "Invalid server response" };
+      }
 
       if (response.ok) {
-        localStorage.setItem("username", data.user.username);
-        window.location.href = "/profile";
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/profile");
       } else {
-        setMessage(data.message);
+        setMessage(data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      setMessage("Something went wrong");
+      setMessage(`Login failed: ${error.message}`);
     }
   };
 
@@ -35,27 +59,50 @@ function Login() {
     <div>
       <h1>Login</h1>
 
+      {message && (
+        <div
+          style={{
+            backgroundColor: "#d4edda",
+            color: "#155724",
+            padding: "10px",
+            borderRadius: "5px",
+            marginBottom: "10px",
+            maxWidth: "300px",
+          }}
+        >
+          {message}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
         />
-        <br /><br />
+        <br />
+        <br />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
-        <br /><br />
+        <br />
+        <br />
 
         <button type="submit">Login</button>
       </form>
 
-      <p>{message}</p>
+      <br />
+
+      <button type="button" onClick={() => navigate("/create-account")}>
+        Create Account
+      </button>
     </div>
   );
 }
