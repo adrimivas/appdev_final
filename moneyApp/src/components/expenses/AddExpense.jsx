@@ -48,7 +48,7 @@ export default function AddExpense({ userId, refresh }) {
                 onChange={(e) => setFormData({...formData, type: e.target.value})}
             >
                 <option value="one_time">One-Time</option>
-                <option value="recurring">Monthly</option>
+                <option value="monthly">Monthly</option>
             </select>
             <button type="submit">Save Expense</button>
         </form>

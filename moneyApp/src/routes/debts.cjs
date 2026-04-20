@@ -67,4 +67,46 @@ router.post("/pay", async (req, res) => {
   }
 });
 
+router.delete("/:userId/:debtId", async (req, res) => {
+  try {
+    const { debtId } = req.params;
+    const db = await connectDB();
+    const result = await db.collection("debts").deleteOne({ 
+      _id: new ObjectId(debtId) 
+    });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "Debt not found" });
+    }
+    res.status(200).json({ message: "Debt deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Delete failed" });
+  }
+});
+
+router.put("/:userId/:debtId", async (req, res) => {
+  try {
+    const { debtId } = req.params;
+    const { newData } = req.body;
+    const db = await connectDB();
+    const result = await db.collection("debts").updateOne(
+      { _id: new ObjectId(debtId) },
+      { 
+        $set: { 
+          name: newData.name,
+          current_balance: parseFloat(newData.current_balance),
+          interest_rate: parseFloat(newData.interest_rate),
+          minimum_payment: parseFloat(newData.minimum_payment),
+          current_payment: parseFloat(newData.current_payment),
+          updatedAt: new Date()
+        } 
+      }
+    );
+    res.status(200).json({ message: "Debt updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Update failed" });
+  }
+});
+
 module.exports = router;
