@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import Login from "./pages/login";
 import Income from "./pages/income";
 import Investments from "./pages/investments";
-import Expenses from "./pages/expenses";
+import Expenses from "./pages/DebtExpenses";
 import Links from "./pages/links";
 import CreateAcc from "./pages/createAcc";
 import Profile from "./pages/profile";
