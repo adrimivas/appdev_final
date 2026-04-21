@@ -149,14 +149,62 @@ async function startServer() {
           message: "Login successful",
           user: {
             id: user._id,
-            username: user.username,
-            email: user.email,
-            name: user.name,
           },
         });
       } catch (error) {
         console.error("Login route error:", error);
         return res.status(500).json({ message: "Server error during login" });
+      }
+    });
+
+    app.get("/users/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        const user = await usersCollection.findOne({
+          _id: new ObjectId(id),
+        });
+
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const debts = await debtsCollection.find({
+          user_id: new ObjectId(id),
+        }).toArray();
+
+        const debtExpenses = debts.map((debt) => ({
+          name: debt.name || "",
+          amount: Number(debt.amount) || 0,
+          category: "debt",
+          type: debt.type || "",
+          current_balance: Number(debt.current_balance) || 0,
+          interest_rate: Number(debt.interest_rate) || 0,
+          minimum_payment: Number(debt.minimum_payment) || 0,
+          current_payment: Number(debt.current_payment) || 0,
+        }));
+
+        return res.status(200).json({
+          user: {
+            id: user._id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            income: Number(user.income) || 0,
+            date_of_birth: user.date_of_birth || null,
+            expenses: {
+              monthly: [
+                ...(Array.isArray(user?.expenses?.monthly)
+                  ? user.expenses.monthly
+                  : []),
+                ...debtExpenses,
+              ],
+            },
+          },
+        });
+      } catch (error) {
+        console.error("Fetch user error:", error);
+        return res.status(500).json({ message: "Server error fetching user" });
       }
     });
 
