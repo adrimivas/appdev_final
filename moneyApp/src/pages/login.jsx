@@ -23,6 +23,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("About to fetch:", "http://localhost:5001/login");
 
     try {
       const response = await fetch("http://localhost:5001/login", {

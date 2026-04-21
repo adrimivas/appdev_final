@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
 
-export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [message, setMessage] = useState("");
+/*export default */function Profile() {
+  //const [user, setUser] = useState(null);
+  //const [message, setMessage] = useState(""); 
+  const [profile, setProfile] = useState(null);
+  const [debts, setDebts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
 
     if (!userId) {
-      setMessage("Please log in to view your profile.");
+      //setMessage("Please log in to view your profile.");
+      setLoading(false);
       return;
     }
 
-    const fetchUser = async () => {
+    /*const fetchUser = async () => {
       try {
         const response = await fetch(`http://localhost:5001/users/${userId}`);
         const data = await response.json();
@@ -26,12 +31,49 @@ export default function Profile() {
         console.error("Profile fetch error:", error);
         setMessage("Failed to load profile.");
       }
+    }; */
+    const fetchProfileData = async () => {
+      try {
+        const [profileRes, debtsRes] = await Promise.all([
+          fetch(`http://localhost:5000/users/${userID}`),
+          fetch(`http://localhost:5000/users/${userID}/debts`),
+        ]);
+        const profileData = await profileRes.json();
+        const debtsData = await debtsRes.json();
+
+        if (!profileRes.ok) {
+          throw new Error(profileData.message || "Failed to lead profile");
+        }
+        if(!debtsRes.ok) {
+          throw new Error(debtsData.message || "Failed to load debts");
+        }
+        setProfile(profileData);
+        setDebts(debtsData);
+      } catch (err) {
+        console.error("Profile fetch error:", err);
+        setError(err.message || "Could not load profile data.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchUser();
+    //fetchUser();
+    fetchProfileData();
   }, []);
 
-  if (message) {
+  if(loading) {
+    return <h2> Loading profile...</h2>;
+  }
+
+  if (!localStorage.getItem("userID")) {
+    return <h2>Please log in to view your profile.</h2>;
+  }
+
+  if (error) {
+    return <h2>{error}</h2>;
+  }
+
+  /*if (message) {
     return (
       <div style={{ textAlign: "center", marginTop: "40px" }}>
         <h2>{message}</h2>
@@ -45,7 +87,8 @@ export default function Profile() {
         <h2>Loading profile...</h2>
       </div>
     );
-  }
+  } */
+  
 
   const fullName =
     user?.name && typeof user.name === "object"
@@ -61,7 +104,7 @@ export default function Profile() {
   }, 0);
 
   return (
-    <div
+    /*<div
       style={{
         maxWidth: "750px",
         margin: "40px auto",
@@ -153,5 +196,64 @@ export default function Profile() {
         </div>
       )}
     </div>
-  );
+  */
+ <div style={{ textAlign: "center", padding: "24px" }}>
+      <h1>Profile</h1>
+      <h2>Welcome, {profile?.username}.</h2>
+
+      <div style={{ marginTop: "20px" }}>
+        <p>
+          <strong>Email:</strong> {profile?.email}
+        </p>
+
+        {profile?.name && (
+          <p>
+            <strong>Name:</strong> {profile.name.first} {profile.name.last}
+          </p>
+        )}
+
+        <p>
+          <strong>Income:</strong> ${profile?.income ?? 0}
+        </p>
+
+        {profile?.date_of_birth && (
+          <p>
+            <strong>Date of Birth:</strong> {profile.date_of_birth}
+          </p>
+        )}
+      </div>
+
+      <div style={{ marginTop: "30px" }}>
+        <h3>Your Debts</h3>
+
+        {debts.length === 0 ? (
+          <p>No debts found.</p>
+        ) : (
+          debts.map((debt) => (
+            <div
+              key={debt._id}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                padding: "12px",
+                margin: "12px auto",
+                maxWidth: "500px",
+                textAlign: "left",
+              }}
+            >
+              <p><strong>Name:</strong> {debt.name}</p>
+              <p><strong>Type:</strong> {debt.type}</p>
+              <p><strong>Amount:</strong> ${debt.amount}</p>
+              <p><strong>Current Balance:</strong> ${debt.current_balance}</p>
+              <p><strong>Interest Rate:</strong> {debt.interest_rate}%</p>
+              <p><strong>Minimum Payment:</strong> ${debt.minimum_payment}</p>
+              <p><strong>Current Payment:</strong> ${debt.current_payment}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+ );
 }
+
+export default Profile;
