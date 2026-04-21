@@ -51,6 +51,13 @@ export default function Header() {
               </NavLink>
 
               <NavLink
+                to="/advice"
+                className={({ isActive }) => (isActive ? "active" : "")}
+              >
+                Advice
+              </NavLink>
+
+              <NavLink
                 to="/investments"
                 className={({ isActive }) => (isActive ? "active" : "")}
               >
@@ -71,13 +78,15 @@ export default function Header() {
                 Calculator
               </NavLink>
 
-              <button
-                type="button"
-                className="logout-btn"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <div className="logout-wrap">
+                <button
+                  type="button"
+                  className="logout-btn"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
             </>
           )}
         </nav>

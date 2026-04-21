@@ -10,6 +10,7 @@ import Links from "./pages/links";
 import CreateAcc from "./pages/createAcc";
 import Profile from "./pages/profile";
 import CalculatorPage from "./pages/calc";
+import Advice from "./pages/Advice";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: "income", element: <Income /> },
       { path: "investments", element: <Investments /> },
       { path: "expenses", element: <Expenses /> },
+      { path: "advice", element: <Advice /> },
       { path: "create-account", element: <CreateAcc /> },
       { path: "links", element: <Links /> },
       { path: "profile", element: <Profile /> },
