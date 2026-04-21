@@ -18,7 +18,7 @@ export const ACCOUNT_TYPES = [
 export const defaultInvestmentProfile = {
   availableToInvest: "",
   emergencyFundReady: false,
-  highInterestDebtPresent,
+  highInterestDebtPresent: false,
   timeHorizonYears: "",
   riskTolerance: "moderate",
   taxPreference: "tax-advantaged",

@@ -3,7 +3,7 @@ export function calculateCdReturn(amount, apy, termMonths) {
     const rate = (Number(apy) || 0) / 100;
     const years = (Number(termMonths) || 0) / 12;
 
-    const endingBalance = pricipal * (1 + rate * years);
+    const endingBalance = principal * (1 + rate * years);
     const interestEarned = endingBalance - principal;
 
     return {
@@ -33,7 +33,7 @@ export function calculateRothProjection(monthlyContribution, expectedAnnualRetur
     };
 }
 
-function getInvestmentSuggestion(profile) {
+export function getInvestmentSuggestion(profile) {
   //Current suggestions, can be modified
   if (profile.highInterestDebtPresent) {
     return {

@@ -6,11 +6,11 @@ export default function CdCard({ cdInputs, setCdInputs }) {
         setCdInputs((prev) => ({ ...prev, [name]: value }));
     }
 
-    const result = calculateCdReturn(cdInputs.amount, cdInputs,AppLayout, cdInputs.termMonths);
+    const result = calculateCdReturn(cdInputs.amount, cdInputs.apy, cdInputs.termMonths);
 
     return (
         <section className="investment-card">
-            <h3>Certificate of Deposti (CD)</h3>
+            <h3>Certificate of Deposit (CD)</h3>
 
             <div className="form-grid">
                 <label>

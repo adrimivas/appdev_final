@@ -48,7 +48,7 @@ export default function useFinnhubStock(symbol, range) {
     return {
         quote,
         chartData,
-        laoding,
+        loading,
         error,
     };
 }

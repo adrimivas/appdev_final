@@ -10,7 +10,7 @@ import {
   defaultCdInputs,
   defaultRothInputs,
   defaultStockInputs,
-} from "../constants/investmentDefaults";
+} from "../constants/appConstants";
 
 export default function Investments() {
   const [profile, setProfile] = useSessionState("investment-profile", defaultInvestmentProfile);

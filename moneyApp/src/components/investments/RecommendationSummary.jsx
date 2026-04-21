@@ -1,4 +1,4 @@
-import { getInvestmentSuggestion } from "../../util/investmentCalculations";
+import { getInvestmentSuggestion } from "../../utils/investmentCalculations";
 
 export default function RecommendationSummary({ profile }) {
     const suggestion = getInvestmentSuggestion(profile);
