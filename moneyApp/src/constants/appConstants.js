@@ -14,3 +14,33 @@ export const ACCOUNT_TYPES = [
     "HSA",
     "Emergency Fund",
 ];
+
+export const defaultInvestmentProfile = {
+  availableToInvest: "",
+  emergencyFundReady: false,
+  highInterestDebtPresent: false,
+  timeHorizonYears: "",
+  riskTolerance: "moderate",
+  taxPreference: "tax-advantaged",
+  age: "",
+  annualIncome: "",
+  hasEmployerRetirementPlan: false,
+};
+
+export const defaultCdInputs = {
+    amount: "",
+    termMonths: 12,
+    apy:4.5,
+}
+
+export const defaultRothInputs = {
+    monthlyContribution: "",
+    expectedAnnualReturn: 7,
+    yearsUntilWithdrawal: "",
+};
+
+export const defaultStockInputs = {
+    symbol: "AAPL",
+    budget: "",
+    range: "1M",
+};
