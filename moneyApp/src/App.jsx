@@ -20,7 +20,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "income", element: <Income /> },
       { path: "investments", element: <Investments /> },
-      { path: "expenses", element: <Expenses /> },
+      { path: "debt", element: <Expenses /> },
       { path: "create-account", element: <CreateAcc /> },
       { path: "links", element: <Links /> },
       { path: "profile", element: <Profile /> },
