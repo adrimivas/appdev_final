@@ -3,6 +3,7 @@ import { calculatePayoffMonths } from "../../utils/debtCalc";
 
 export default function DebtDetail({ debt, goBack, userId, refresh }) {
     if (!debt) return null;
+    const paymentAmount = debt.current_payment || debt.minimum_payment || 0;
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({
         name: debt.name || "",
@@ -23,7 +24,7 @@ export default function DebtDetail({ debt, goBack, userId, refresh }) {
     const { months, totalPaid } = calculatePayoffMonths(
         debt.current_balance || 0,
         debt.interest_rate || 0,
-        debt.current_payment || debt.minimum_payment || 0
+        paymentAmount
     );
     const totalInterest = totalPaid - (debt.current_balance || 0);
     const years = Math.floor(months / 12);
@@ -84,7 +85,7 @@ export default function DebtDetail({ debt, goBack, userId, refresh }) {
                     <p>Original: ${ (debt.original_amount || 0).toFixed(2)}</p>
                     <p>Interest: { (debt.interest_rate || 0).toFixed(2)}%</p>
                     <p>Minimum Payment: ${ (debt.minimum_payment || 0).toFixed(2)}</p>
-                    <p>Current Payment: ${ (debt.current_payment || 0).toFixed(2)}</p>
+                    <p>Current Payment: ${paymentAmount.toFixed(2)}</p>
                     <hr />
                     <h3>Payoff Time</h3>
                     <p>

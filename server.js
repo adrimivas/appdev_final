@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
+const debtRoutes = require("./moneyApp/src/routes/debts.cjs");
+const expenseRoutes = require("./moneyApp/src/routes/expenses.cjs");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -172,6 +174,9 @@ async function startServer() {
         return res.status(500).json({ message: "Server error fetching debts" });
       }
     });
+
+    app.use("/api/debts", debtRoutes);
+    app.use("/api/expenses", expenseRoutes);
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
