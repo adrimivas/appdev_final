@@ -3,11 +3,12 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
+
 const debtRoutes = require("./moneyApp/src/routes/debts.cjs");
 const expenseRoutes = require("./moneyApp/src/routes/expenses.cjs");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
@@ -54,8 +55,11 @@ async function startServer() {
           return res.status(400).json({ message: "Missing required fields" });
         }
 
+        const normalizedUsername = username.trim();
+        const normalizedEmail = email.trim().toLowerCase();
+
         const existingUser = await usersCollection.findOne({
-          $or: [{ username }, { email }],
+          $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
         });
 
         if (existingUser) {
@@ -79,12 +83,12 @@ async function startServer() {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = {
-          username: username.trim(),
+          username: normalizedUsername,
           name: {
             first: name.first.trim(),
             last: name.last.trim(),
           },
-          email: email.trim().toLowerCase(),
+          email: normalizedEmail,
           password: hashedPassword,
           income: Number(income) || 0,
           expenses: {
@@ -129,7 +133,7 @@ async function startServer() {
 
     app.post("/login", async (req, res) => {
       try {
-        const { username, password } = req.body;
+        let { username, password } = req.body;
 
         if (!username || !password) {
           return res
@@ -137,9 +141,34 @@ async function startServer() {
             .json({ message: "Username and password are required" });
         }
 
+        username = username.trim();
+
         const user = await usersCollection.findOne({ username });
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        if (!user) {
+          return res
+            .status(401)
+            .json({ message: "Invalid username or password" });
+        }
+
+        let passwordMatch = false;
+
+        if (typeof user.password === "string" && user.password.startsWith("$2")) {
+          passwordMatch = await bcrypt.compare(password, user.password);
+        } else {
+          passwordMatch = password === user.password;
+
+          if (passwordMatch) {
+            const newHashedPassword = await bcrypt.hash(password, 10);
+
+            await usersCollection.updateOne(
+              { _id: user._id },
+              { $set: { password: newHashedPassword } }
+            );
+          }
+        }
+
+        if (!passwordMatch) {
           return res
             .status(401)
             .json({ message: "Invalid username or password" });
