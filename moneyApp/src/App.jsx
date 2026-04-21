@@ -24,8 +24,8 @@ const router = createBrowserRouter([
       { path: "expenses", element: <Expenses /> },
       { path: "create-account", element: <CreateAcc /> },
       { path: "links", element: <Links /> },
-      { path: "calculator", element: <CalculatorPage /> },
       { path: "profile", element: <Profile /> },
+      { path: "calculator", element: <CalculatorPage /> },
     ],
   },
 ]);
