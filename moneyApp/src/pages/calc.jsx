@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 function formatMoney(value) {
   return Number(value || 0).toLocaleString(undefined, {
@@ -16,41 +16,38 @@ function formatMonths(months) {
   return `${years}y ${rem}m`;
 }
 
-function DebtCalculator({ debts = [] }) {
+function DebtCalculator() {
   const [balance, setBalance] = useState(12000);
   const [rate, setRate] = useState(18);
   const [minPay, setMinPay] = useState(300);
   const [extra, setExtra] = useState(0);
-  const [showDebtPicker, setShowDebtPicker] = useState(false);
-  const [selectedDebtId, setSelectedDebtId] = useState(null);
 
-  const applyDebt = (debt) => {
-    setBalance(Number(debt.current_balance || 0));
-    setRate(Number(debt.interest_rate || 0));
-    setMinPay(Number(debt.minimum_payment || 0));
-    setSelectedDebtId(debt.id);
-    setShowDebtPicker(false);
-  };
+  const calculatePayoff = (principal, annualRate, monthlyPayment) => {
+    const safePrincipal = Number(principal) || 0;
+    const monthlyRate = (Number(annualRate) || 0) / 100 / 12;
+    const payment = Number(monthlyPayment) || 0;
 
-  const selectedDebt = debts.find((debt) => debt.id === selectedDebtId);
-
-  const result = useMemo(() => {
-    const principal = Number(balance) || 0;
-    const monthlyRate = (Number(rate) || 0) / 100 / 12;
-    const minimumPayment = Number(minPay) || 0;
-    const extraPayment = Number(extra) || 0;
-    const payment = minimumPayment + extraPayment;
-
-    if (principal <= 0 || payment <= 0) {
+    if (safePrincipal <= 0 || payment <= 0) {
       return {
         months: 0,
         interest: 0,
         total: 0,
         payment: 0,
+        canPayOff: false,
       };
     }
 
-    let remaining = principal;
+    if (monthlyRate > 0 && payment <= safePrincipal * monthlyRate) {
+      return {
+        months: Infinity,
+        interest: Infinity,
+        total: Infinity,
+        payment,
+        canPayOff: false,
+      };
+    }
+
+    let remaining = safePrincipal;
     let months = 0;
     let interest = 0;
 
@@ -61,13 +58,49 @@ function DebtCalculator({ debts = [] }) {
       months++;
     }
 
+    if (remaining > 0) {
+      return {
+        months: Infinity,
+        interest: Infinity,
+        total: Infinity,
+        payment,
+        canPayOff: false,
+      };
+    }
+
     return {
       months,
       interest,
-      total: principal + interest,
+      total: safePrincipal + interest,
       payment,
+      canPayOff: true,
     };
+  };
+
+  const baseResult = useMemo(() => {
+    return calculatePayoff(balance, rate, minPay);
+  }, [balance, rate, minPay]);
+
+  const result = useMemo(() => {
+    const totalPayment = (Number(minPay) || 0) + (Number(extra) || 0);
+    return calculatePayoff(balance, rate, totalPayment);
   }, [balance, rate, minPay, extra]);
+
+  const savings = useMemo(() => {
+    if (!result.canPayOff || !baseResult.canPayOff) {
+      return {
+        totalSaved: 0,
+        interestSaved: 0,
+        monthsSaved: 0,
+      };
+    }
+
+    return {
+      totalSaved: Math.max(baseResult.total - result.total, 0),
+      interestSaved: Math.max(baseResult.interest - result.interest, 0),
+      monthsSaved: Math.max(baseResult.months - result.months, 0),
+    };
+  }, [baseResult, result]);
 
   return (
     <section
@@ -79,116 +112,15 @@ function DebtCalculator({ debts = [] }) {
         width: "100%",
         maxWidth: 900,
         margin: "0 auto 32px auto",
+        fontSize: 14,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          marginBottom: 20,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h2 style={{ margin: 0, fontSize: 32 }}>Debt Payoff Calculator</h2>
-          {selectedDebt ? (
-            <p style={{ margin: "8px 0 0 0", color: "#666" }}>
-              Using saved debt: <strong>{selectedDebt.name}</strong>
-            </p>
-          ) : null}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowDebtPicker((prev) => !prev)}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 10,
-            border: "1px solid #bbb",
-            background: "#fff",
-            cursor: "pointer",
-            fontSize: 16,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {showDebtPicker ? "Close" : "Test with your debt(s)"}
-        </button>
+      <div style={{ marginBottom: 20, textAlign: "center" }}>
+        <h2 style={{ margin: 0, fontSize: 32 }}>Debt Payoff Calculator</h2>
+        <p style={{ margin: "8px 0 0 0", color: "#666" }}>
+          Enter your debt details below to estimate payoff time and interest.
+        </p>
       </div>
-
-      {showDebtPicker && (
-        <div
-          style={{
-            border: "1px solid #e3e3e3",
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 24,
-            background: "#fafafa",
-          }}
-        >
-          <h3
-            style={{
-              marginTop: 0,
-              marginBottom: 16,
-              textAlign: "center",
-              fontSize: 22,
-            }}
-          >
-            Click one of your debts to test various payment scenarios
-          </h3>
-
-          {debts.length === 0 ? (
-            <p style={{ textAlign: "center", margin: 0, color: "#666" }}>
-              No saved debts found.
-            </p>
-          ) : (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 14,
-              }}
-            >
-              {debts.map((debt) => {
-                const isSelected = selectedDebtId === debt.id;
-
-                return (
-                  <button
-                    key={debt.id}
-                    type="button"
-                    onClick={() => applyDebt(debt)}
-                    style={{
-                      textAlign: "left",
-                      padding: 16,
-                      borderRadius: 14,
-                      border: isSelected ? "2px solid #4f46e5" : "1px solid #d7d7d7",
-                      background: isSelected ? "#eef2ff" : "#fff",
-                      cursor: "pointer",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6 }}>
-                      {debt.name || "Unnamed Debt"}
-                    </div>
-
-                    <div style={{ color: "#666", fontSize: 14, lineHeight: 1.6 }}>
-                      <div>Type: {debt.type || "N/A"}</div>
-                      <div>
-                        Current Balance: {formatMoney(debt.current_balance)}
-                      </div>
-                      <div>Interest Rate: {Number(debt.interest_rate || 0)}%</div>
-                      <div>
-                        Minimum Payment: {formatMoney(debt.minimum_payment)}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
 
       <div
         style={{
@@ -205,7 +137,7 @@ function DebtCalculator({ debts = [] }) {
           <input
             type="number"
             value={balance}
-            onChange={(e) => setBalance(e.target.value)}
+            onChange={(e) => setBalance(Number(e.target.value))}
             style={{
               width: "100%",
               padding: 14,
@@ -223,7 +155,7 @@ function DebtCalculator({ debts = [] }) {
           <input
             type="number"
             value={rate}
-            onChange={(e) => setRate(e.target.value)}
+            onChange={(e) => setRate(Number(e.target.value))}
             style={{
               width: "100%",
               padding: 14,
@@ -241,7 +173,7 @@ function DebtCalculator({ debts = [] }) {
           <input
             type="number"
             value={minPay}
-            onChange={(e) => setMinPay(e.target.value)}
+            onChange={(e) => setMinPay(Number(e.target.value))}
             style={{
               width: "100%",
               padding: 14,
@@ -259,7 +191,7 @@ function DebtCalculator({ debts = [] }) {
           <input
             type="number"
             value={extra}
-            onChange={(e) => setExtra(e.target.value)}
+            onChange={(e) => setExtra(Number(e.target.value))}
             style={{
               width: "100%",
               padding: 14,
@@ -288,23 +220,50 @@ function DebtCalculator({ debts = [] }) {
             <tr>
               <td style={{ padding: "10px 0", fontSize: 18 }}>Estimated Payoff Time</td>
               <td style={{ padding: "10px 0", textAlign: "right", fontSize: 18 }}>
-                {formatMonths(result.months)}
+                {result.canPayOff ? formatMonths(result.months) : "Payment too low"}
               </td>
             </tr>
             <tr>
               <td style={{ padding: "10px 0", fontSize: 18 }}>Estimated Interest Paid</td>
               <td style={{ padding: "10px 0", textAlign: "right", fontSize: 18 }}>
-                {formatMoney(result.interest)}
+                {result.canPayOff ? formatMoney(result.interest) : "N/A"}
               </td>
             </tr>
             <tr>
               <td style={{ padding: "10px 0", fontSize: 18 }}>Estimated Total Paid</td>
               <td style={{ padding: "10px 0", textAlign: "right", fontSize: 18 }}>
-                {formatMoney(result.total)}
+                {result.canPayOff ? formatMoney(result.total) : "N/A"}
               </td>
             </tr>
           </tbody>
         </table>
+
+        {Number(extra) > 0 && result.canPayOff && baseResult.canPayOff && (
+          <div
+            style={{
+              marginTop: 24,
+              padding: 18,
+              borderRadius: 14,
+              background: "#f3f0ff",
+              border: "1px solid #d8cffc",
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 18,
+                lineHeight: 1.6,
+                color: "#4b3f72",
+                textAlign: "center",
+              }}
+            >
+              By paying an extra <strong>{formatMoney(extra)}</strong> each month, you save{" "}
+              <strong>{formatMoney(savings.totalSaved)}</strong> overall, including{" "}
+              <strong>{formatMoney(savings.interestSaved)}</strong> in interest, and pay off
+              your debt <strong>{formatMonths(savings.monthsSaved)}</strong> sooner.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -320,7 +279,6 @@ function BudgetCalculator() {
     return {
       leftover,
       savings: leftover * 0.5,
-      debtExtra: leftover * 0.3,
       spending: leftover * 0.2,
     };
   }, [income, expenses, debt]);
@@ -338,6 +296,19 @@ function BudgetCalculator() {
       }}
     >
       <h2 style={{ marginTop: 0 }}>Monthly Budget Planner</h2>
+
+<p
+  style={{
+    maxWidth: 520,
+    margin: "8px auto 20px auto",
+    color: "#555",
+    textAlign: "center",
+    lineHeight: 1.6,
+    fontSize: 14,
+  }}
+>
+  Balance your income against expenses to control spending and increase savings.
+</p>
 
       <div style={{ display: "grid", gap: 16, maxWidth: 520, margin: "0 auto" }}>
         <div>
@@ -376,19 +347,21 @@ function BudgetCalculator() {
           <tbody>
             <tr>
               <td style={{ padding: "10px 0" }}>Money Left After Bills</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{formatMoney(result.leftover)}</td>
+              <td style={{ padding: "10px 0", textAlign: "right" }}>
+                {formatMoney(result.leftover)}
+              </td>
             </tr>
             <tr>
               <td style={{ padding: "10px 0" }}>Suggested Savings Amount</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{formatMoney(result.savings)}</td>
-            </tr>
-            <tr>
-              <td style={{ padding: "10px 0" }}>Suggested Extra Debt Payment</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{formatMoney(result.debtExtra)}</td>
+              <td style={{ padding: "10px 0", textAlign: "right" }}>
+                {formatMoney(result.savings)}
+              </td>
             </tr>
             <tr>
               <td style={{ padding: "10px 0" }}>Suggested Flexible Spending</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{formatMoney(result.spending)}</td>
+              <td style={{ padding: "10px 0", textAlign: "right" }}>
+                {formatMoney(result.spending)}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -424,6 +397,20 @@ function EmergencyCalculator() {
       }}
     >
       <h2 style={{ marginTop: 0 }}>Emergency Fund Calculator</h2>
+
+      <p
+        style={{
+          maxWidth: 520,
+          margin: "0 auto 20px auto",
+          color: "#555",
+          textAlign: "center",
+          lineHeight: 1.6,
+          fontSize: 14,
+        }}
+      >
+        An emergency fund should generally cover three to six months of essential living
+        expenses.
+      </p>
 
       <div style={{ display: "grid", gap: 16, maxWidth: 520, margin: "0 auto" }}>
         <div>
@@ -474,15 +461,21 @@ function EmergencyCalculator() {
           <tbody>
             <tr>
               <td style={{ padding: "10px 0" }}>Emergency Fund Target</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{formatMoney(result.target)}</td>
+              <td style={{ padding: "10px 0", textAlign: "right" }}>
+                {formatMoney(result.target)}
+              </td>
             </tr>
             <tr>
               <td style={{ padding: "10px 0" }}>Amount Still Needed</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{formatMoney(result.needed)}</td>
+              <td style={{ padding: "10px 0", textAlign: "right" }}>
+                {formatMoney(result.needed)}
+              </td>
             </tr>
             <tr>
               <td style={{ padding: "10px 0" }}>Estimated Time to Reach Goal</td>
-              <td style={{ padding: "10px 0", textAlign: "right" }}>{result.time} months</td>
+              <td style={{ padding: "10px 0", textAlign: "right" }}>
+                {result.time} months
+              </td>
             </tr>
           </tbody>
         </table>
@@ -492,63 +485,6 @@ function EmergencyCalculator() {
 }
 
 export default function CalculatorPage() {
-  const [user, setUser] = useState(null);
-  const [debts, setDebts] = useState([]);
-  const [loadingDebts, setLoadingDebts] = useState(true);
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-
-    if (!userId) {
-      setMessage("Please log in to use the calculators.");
-      setLoadingDebts(false);
-      return;
-    }
-
-    const fetchUser = async () => {
-      try {
-        const response = await fetch(`http://localhost:5001/users/${userId}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          setMessage(data.message || "Could not load calculator data.");
-          setLoadingDebts(false);
-          return;
-        }
-
-        const loadedUser = data.user;
-        setUser(loadedUser);
-
-        const monthlyExpenses = Array.isArray(loadedUser?.expenses?.monthly)
-          ? loadedUser.expenses.monthly
-          : [];
-
-        const debtItems = monthlyExpenses
-          .filter(
-            (item) => String(item?.category || "").toLowerCase().trim() === "debt"
-          )
-          .map((item, index) => ({
-            id: item?._id || item?.id || `${item?.name || "debt"}-${index}`,
-            name: item?.name || item?.type || "Unnamed Debt",
-            type: item?.type || "N/A",
-            current_balance: Number(item?.current_balance || 0),
-            interest_rate: Number(item?.interest_rate || 0),
-            minimum_payment: Number(item?.minimum_payment || item?.amount || 0),
-          }));
-
-        setDebts(debtItems);
-      } catch (error) {
-        console.error("Calculator fetch error:", error);
-        setMessage("Failed to load calculator data.");
-      } finally {
-        setLoadingDebts(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   return (
     <div
       style={{
@@ -559,19 +495,40 @@ export default function CalculatorPage() {
         justifyContent: "center",
       }}
     >
-      <div style={{ width: "100%", maxWidth: 1000 }}>
-        <h1 style={{ textAlign: "center", marginTop: 0, marginBottom: 28 }}>
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 1000,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <h1 style={{ textAlign: "center", marginTop: 0, marginBottom: 12 }}>
           Financial Calculators
         </h1>
 
-        {message ? (
-          <p style={{ textAlign: "center" }}>{message}</p>
-        ) : loadingDebts ? (
-          <p style={{ textAlign: "center" }}>Loading saved debts...</p>
-        ) : (
-          <DebtCalculator debts={debts} />
-        )}
+        <p
+          style={{
+            textAlign: "center",
+            maxWidth: 700,
+            margin: "32px auto 28px auto",
+            color: "#555",
+            lineHeight: 1.6,
+            fontSize: 12,
+          }}
+        >
+          Disclaimer: Estimates are for informational purposes only and may not
+          reflect exact results.
+          <br />
+          <br />
+          The calculator page is designed to help users make smarter financial
+          decisions by providing interactive tools for debt repayment,
+          budgeting, and emergency fund planning. It gives users quick
+          estimates and practical insights based on the numbers they enter.
+        </p>
 
+        <DebtCalculator />
         <BudgetCalculator />
         <EmergencyCalculator />
       </div>
