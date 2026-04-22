@@ -199,7 +199,7 @@ function DebtCalculator({ debts = [], loadingDebts = false, debtMessage = "" }) 
               style={{
                 margin: "8px auto 0 auto",
                 color: "#666",
-                fontSize: 18,
+                fontSize: 14,
                 lineHeight: 1.5,
                 maxWidth: 520,
               }}
