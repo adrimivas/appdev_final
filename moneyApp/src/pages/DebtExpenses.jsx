@@ -464,6 +464,7 @@ export default function Expenses() {
             fontSize: 14,
           }}
         >
+          <br />
           Review your debts and expenses in one place, track payoff progress, and
           manage monthly obligations more clearly.
         </p>
