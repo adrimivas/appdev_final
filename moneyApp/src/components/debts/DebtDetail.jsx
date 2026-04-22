@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { calculatePayoffMonths } from "../../utils/debtCalc";
 
+function getMonthlyInterestAmount(balance, annualRate) {
+  return Number(balance || 0) * (Number(annualRate || 0) / 100 / 12);
+}
+
 function formatMoney(value) {
   return Number(value || 0).toLocaleString(undefined, {
     style: "currency",

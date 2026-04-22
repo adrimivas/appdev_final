@@ -58,14 +58,15 @@ function getMonthlyInterestAmount(debt) {
 function getDebtProgress(debt) {
   const originalBalance = getOriginalBalance(debt);
   const currentBalance = getCurrentBalance(debt);
-  const interestAmount = getMonthlyInterestAmount(debt);
+  const projectedInterest = getProjectedInterest(debt);
 
   const paidAmount = Math.max(originalBalance - currentBalance, 0);
   const remainingAmount = Math.max(currentBalance, 0);
+  const interestAmount = Math.max(projectedInterest, 0);
 
-  const totalVisual = paidAmount + remainingAmount + interestAmount;
+  const total = paidAmount + remainingAmount + interestAmount;
 
-  if (totalVisual <= 0) {
+  if (total <= 0) {
     return {
       paidPercent: 0,
       remainingPercent: 100,
@@ -77,12 +78,29 @@ function getDebtProgress(debt) {
   }
 
   return {
-    paidPercent: (paidAmount / totalVisual) * 100,
-    remainingPercent: (remainingAmount / totalVisual) * 100,
-    interestPercent: (interestAmount / totalVisual) * 100,
+    paidPercent: (paidAmount / total) * 100,
+    remainingPercent: (remainingAmount / total) * 100,
+    interestPercent: (interestAmount / total) * 100,
     paidAmount,
     remainingAmount,
     interestAmount,
+  };
+}
+
+function getMonthlyPaymentBreakdown(debt) {
+  const currentBalance = getCurrentBalance(debt);
+  const annualRate = getInterestRate(debt);
+  const paymentAmount = Number(
+    debt?.current_payment ?? debt?.minimum_payment ?? 0
+  );
+
+  const monthlyInterest = currentBalance * (annualRate / 100 / 12);
+  const interestPortion = Math.min(monthlyInterest, paymentAmount);
+  const principalPortion = Math.max(paymentAmount - interestPortion, 0);
+
+  return {
+    principalPortion,
+    interestPortion,
   };
 }
 
@@ -204,6 +222,7 @@ function DebtCard({ debt, onSelect }) {
     debt?.current_payment ?? debt?.minimum_payment ?? 0
   );
   const projectedInterest = getProjectedInterest(debt);
+  const monthlyInterestAmount = getMonthlyInterestAmount(debt);
 
   const {
     paidPercent,
@@ -213,6 +232,8 @@ function DebtCard({ debt, onSelect }) {
     remainingAmount,
     interestAmount,
   } = getDebtProgress(debt);
+
+  const { principalPortion } = getMonthlyPaymentBreakdown(debt);
 
   return (
     <button
@@ -231,8 +252,12 @@ function DebtCard({ debt, onSelect }) {
         <div>Type: {debt?.type || "N/A"}</div>
         <div>Current Balance: {formatMoney(currentBalance)}</div>
         <div>Interest Rate: {interestRate}%</div>
+        <div>Interest Per Month: {formatMoney(monthlyInterestAmount)}</div>
         <div>Minimum Payment: {formatMoney(minimumPayment)}</div>
-        {originalBalance > 0 && <div>Original Balance: {formatMoney(originalBalance)}</div>}
+        <div>Current Monthly Payment: {formatMoney(paymentAmount)}</div>
+        {originalBalance > 0 && (
+          <div>Original Balance: {formatMoney(originalBalance)}</div>
+        )}
       </div>
 
       <div style={{ marginTop: 14 }}>
@@ -244,62 +269,71 @@ function DebtCard({ debt, onSelect }) {
             marginBottom: 4,
           }}
         >
-          Payment Status
+          Lifetime Cost Breakdown
         </div>
 
         <div style={progressTrackStyle()}>
-  <div
-    style={{
-      width: `${paidPercent}%`,
-      background: "#22c55e", // green = paid
-    }}
-  />
-  <div
-    style={{
-      width: `${remainingPercent}%`,
-      background: "#d1d5db", // gray = remaining
-    }}
-  />
-  <div
-    style={{
-      width: `${interestPercent}%`,
-      background: "#ef4444", // red = interest
-    }}
-  />
-</div>
-<div
-  style={{
-    display: "grid",
-    gap: 4,
-    fontSize: 13,
-    color: "#555",
-  }}
->
-  <div>
-    <span style={{ color: "#22c55e", fontWeight: 600 }}>Paid:</span>{" "}
-    {formatMoney(paidAmount)}
-  </div>
-  <div>
-    <span style={{ color: "#ef4444", fontWeight: 600 }}>Monthly interest:</span>{" "}
-    {formatMoney(interestAmount)}
-  </div>
-  <div>
-    <span style={{ color: "#6b7280", fontWeight: 600 }}>Left to pay:</span>{" "}
-    {formatMoney(remainingAmount)}
-  </div>
-  <div>
-    <span style={{ color: "#746c82", fontWeight: 600 }}>
-      Total interest on current plan:
-    </span>{" "}
-    {formatMoney(projectedInterest)}
-  </div>
-  <div>
-    <span style={{ color: "#746c82", fontWeight: 600 }}>
-      Payment used:
-    </span>{" "}
-    {formatMoney(paymentAmount)}
-  </div>
-</div>
+          <div
+            style={{
+              width: `${paidPercent}%`,
+              background: "#22c55e",
+            }}
+          />
+          <div
+            style={{
+              width: `${remainingPercent}%`,
+              background: "#d1d5db",
+            }}
+          />
+          <div
+            style={{
+              width: `${interestPercent}%`,
+              background: "#ef4444",
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gap: 4,
+            fontSize: 13,
+            color: "#555",
+          }}
+        >
+          <div>
+            <span style={{ color: "#22c55e", fontWeight: 600 }}>Paid:</span>{" "}
+            {formatMoney(paidAmount)}
+          </div>
+          <div>
+            <span style={{ color: "#6b7280", fontWeight: 600 }}>Left to pay:</span>{" "}
+            {formatMoney(remainingAmount)}
+          </div>
+          <div>
+            <span style={{ color: "#22c55e", fontWeight: 600 }}>
+              Principal this month:
+            </span>{" "}
+            {formatMoney(principalPortion)}
+          </div>
+          <div>
+            <span style={{ color: "#ef4444", fontWeight: 600 }}>
+              Interest per month:
+            </span>{" "}
+            {formatMoney(monthlyInterestAmount)}
+          </div>
+          <div>
+            <span style={{ color: "#ef4444", fontWeight: 600 }}>
+              Total interest on current plan:
+            </span>{" "}
+            {formatMoney(interestAmount)}
+          </div>
+          <div>
+            <span style={{ color: "#746c82", fontWeight: 600 }}>
+              Payment used:
+            </span>{" "}
+            {formatMoney(paymentAmount)}
+          </div>
+        </div>
       </div>
     </button>
   );
@@ -496,13 +530,13 @@ export default function Expenses() {
             }}
           >
             <div>
-              <span style={{ color: "#22c55e", fontWeight: 700 }}>■</span> Paid off
-            </div>
-            <div>
-              <span style={{ color: "#ef4444", fontWeight: 700 }}>■</span> Interest this month
+              <span style={{ color: "#22c55e", fontWeight: 700 }}>■</span> Paid
             </div>
             <div>
               <span style={{ color: "#9ca3af", fontWeight: 700 }}>■</span> Remaining balance
+            </div>
+            <div>
+              <span style={{ color: "#ef4444", fontWeight: 700 }}>■</span> Total interest on plan
             </div>
           </div>
         </section>

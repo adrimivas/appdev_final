@@ -8,6 +8,7 @@ export default function AddDebt({ userId, refresh }) {
     current_balance: "",
     interest_rate: "",
     minimum_payment: "",
+    current_payment: "",
   });
 
   const [message, setMessage] = useState("");
@@ -31,7 +32,14 @@ export default function AddDebt({ userId, refresh }) {
 
     const originalAmount = Number(form.original_amount) || 0;
     const currentBalance =
-      form.current_balance !== "" ? Number(form.current_balance) : originalAmount;
+      form.current_balance !== ""
+        ? Number(form.current_balance)
+        : originalAmount;
+
+    const currentPayment =
+      form.current_payment !== ""
+        ? Number(form.current_payment)
+        : Number(form.minimum_payment) || 0;
 
     const debtData = {
       user_id: userId,
@@ -41,7 +49,7 @@ export default function AddDebt({ userId, refresh }) {
       current_balance: currentBalance,
       interest_rate: Number(form.interest_rate) || 0,
       minimum_payment: Number(form.minimum_payment) || 0,
-      current_payment: Number(form.minimum_payment) || 0,
+      current_payment: currentPayment,
     };
 
     try {
@@ -60,7 +68,7 @@ export default function AddDebt({ userId, refresh }) {
         return;
       }
 
-      setMessage("Debt added successfully.");
+      setMessage("Debt successfully added.");
 
       setForm({
         name: "",
@@ -69,6 +77,7 @@ export default function AddDebt({ userId, refresh }) {
         current_balance: "",
         interest_rate: "",
         minimum_payment: "",
+        current_payment: "",
       });
 
       refresh();
@@ -97,14 +106,7 @@ export default function AddDebt({ userId, refresh }) {
         placeholder="Debt Name"
         value={form.name}
         onChange={handleChange}
-        style={{
-          width: "100%",
-          padding: 14,
-          fontSize: 16,
-          borderRadius: 10,
-          border: "1px solid #aaa",
-          boxSizing: "border-box",
-        }}
+        style={inputStyle}
       />
 
       <select
@@ -112,15 +114,7 @@ export default function AddDebt({ userId, refresh }) {
         value={form.type}
         onChange={handleChange}
         required
-        style={{
-          width: "100%",
-          padding: 14,
-          fontSize: 16,
-          borderRadius: 10,
-          border: "1px solid #aaa",
-          boxSizing: "border-box",
-          background: "#fff",
-        }}
+        style={inputStyle}
       >
         <option value="" disabled>Select Debt Type</option>
         <option value="Credit Card">Credit Card</option>
@@ -138,14 +132,7 @@ export default function AddDebt({ userId, refresh }) {
         placeholder="Original Balance"
         value={form.original_amount}
         onChange={handleChange}
-        style={{
-          width: "100%",
-          padding: 14,
-          fontSize: 16,
-          borderRadius: 10,
-          border: "1px solid #aaa",
-          boxSizing: "border-box",
-        }}
+        style={inputStyle}
       />
 
       <input
@@ -154,14 +141,7 @@ export default function AddDebt({ userId, refresh }) {
         placeholder="Current Balance"
         value={form.current_balance}
         onChange={handleChange}
-        style={{
-          width: "100%",
-          padding: 14,
-          fontSize: 16,
-          borderRadius: 10,
-          border: "1px solid #aaa",
-          boxSizing: "border-box",
-        }}
+        style={inputStyle}
       />
 
       <input
@@ -170,14 +150,7 @@ export default function AddDebt({ userId, refresh }) {
         placeholder="Interest Rate (%)"
         value={form.interest_rate}
         onChange={handleChange}
-        style={{
-          width: "100%",
-          padding: 14,
-          fontSize: 16,
-          borderRadius: 10,
-          border: "1px solid #aaa",
-          boxSizing: "border-box",
-        }}
+        style={inputStyle}
       />
 
       <input
@@ -186,63 +159,69 @@ export default function AddDebt({ userId, refresh }) {
         placeholder="Minimum Payment"
         value={form.minimum_payment}
         onChange={handleChange}
-        style={{
-          width: "100%",
-          padding: 14,
-          fontSize: 16,
-          borderRadius: 10,
-          border: "1px solid #aaa",
-          boxSizing: "border-box",
-        }}
+        style={inputStyle}
       />
 
-      <button
-        type="submit"
-        style={{
-          padding: "10px 16px",
-          borderRadius: 10,
-          border: "1px solid #bbb",
-          background: "#fff",
-          cursor: "pointer",
-          fontSize: 16,
-        }}
-      >
+      <input
+        name="current_payment"
+        type="number"
+        placeholder="Current Monthly Payment"
+        value={form.current_payment}
+        onChange={handleChange}
+        style={inputStyle}
+      />
+
+      <button type="submit" style={buttonStyle}>
         Save Debt
       </button>
 
       {message && (
-        <p
-          style={{
-            margin: 0,
-            color: "#15803d",
-            background: "#dcfce7",
-            border: "1px solid #86efac",
-            padding: "10px 12px",
-            borderRadius: 10,
-            textAlign: "center",
-            fontSize: 14,
-          }}
-        >
-          {message}
-        </p>
+        <p style={successStyle}>{message}</p>
       )}
 
       {errorMessage && (
-        <p
-          style={{
-            margin: 0,
-            color: "#b91c1c",
-            background: "#fee2e2",
-            border: "1px solid #fca5a5",
-            padding: "10px 12px",
-            borderRadius: 10,
-            textAlign: "center",
-            fontSize: 14,
-          }}
-        >
-          {errorMessage}
-        </p>
+        <p style={errorStyle}>{errorMessage}</p>
       )}
     </form>
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: 14,
+  fontSize: 16,
+  borderRadius: 10,
+  border: "1px solid #aaa",
+  boxSizing: "border-box",
+};
+
+const buttonStyle = {
+  padding: "10px 16px",
+  borderRadius: 10,
+  border: "1px solid #bbb",
+  background: "#fff",
+  cursor: "pointer",
+  fontSize: 16,
+};
+
+const successStyle = {
+  margin: 0,
+  color: "#15803d",
+  background: "#dcfce7",
+  border: "1px solid #86efac",
+  padding: "10px 12px",
+  borderRadius: 10,
+  textAlign: "center",
+  fontSize: 14,
+};
+
+const errorStyle = {
+  margin: 0,
+  color: "#b91c1c",
+  background: "#fee2e2",
+  border: "1px solid #fca5a5",
+  padding: "10px 12px",
+  borderRadius: 10,
+  textAlign: "center",
+  fontSize: 14,
+};
