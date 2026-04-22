@@ -16,7 +16,6 @@ export default function AddDebt({ userId, refresh }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    setMessage("");
     setErrorMessage("");
   };
 
@@ -32,9 +31,7 @@ export default function AddDebt({ userId, refresh }) {
 
     const originalAmount = Number(form.original_amount) || 0;
     const currentBalance =
-      form.current_balance !== ""
-        ? Number(form.current_balance)
-        : originalAmount;
+      form.current_balance !== "" ? Number(form.current_balance) : originalAmount;
 
     const debtData = {
       user_id: userId,
@@ -63,7 +60,7 @@ export default function AddDebt({ userId, refresh }) {
         return;
       }
 
-      setMessage("Debt successfully added.");
+      setMessage("Debt added successfully.");
 
       setForm({
         name: "",
@@ -75,6 +72,10 @@ export default function AddDebt({ userId, refresh }) {
       });
 
       refresh();
+
+      setTimeout(() => {
+        setMessage("");
+      }, 5000);
     } catch (err) {
       console.error("Error adding debt:", err);
       setErrorMessage("Could not connect to the server.");
@@ -213,7 +214,11 @@ export default function AddDebt({ userId, refresh }) {
         <p
           style={{
             margin: 0,
-            color: "green",
+            color: "#15803d",
+            background: "#dcfce7",
+            border: "1px solid #86efac",
+            padding: "10px 12px",
+            borderRadius: 10,
             textAlign: "center",
             fontSize: 14,
           }}
@@ -226,7 +231,11 @@ export default function AddDebt({ userId, refresh }) {
         <p
           style={{
             margin: 0,
-            color: "red",
+            color: "#b91c1c",
+            background: "#fee2e2",
+            border: "1px solid #fca5a5",
+            padding: "10px 12px",
+            borderRadius: 10,
             textAlign: "center",
             fontSize: 14,
           }}

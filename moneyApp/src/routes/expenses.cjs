@@ -1,115 +1,172 @@
 const express = require("express");
-const router = express.Router();
-const connectDB = require("../../database/connect.cjs");
 const { ObjectId } = require("mongodb");
+const connectDB = require("../../database/connect.cjs");
+
+const router = express.Router();
 
 router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     const db = await connectDB();
-    const currentMonthStr = new Date().toISOString().slice(0, 7);
-    const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });
-    if (!user) return res.status(404).json({ error: "User not found" });
-    let expenses = user.expenses || { one_time: [], monthly: [], recurring: [] };
-    const monthExists = expenses.monthly.find(m => m.month === currentMonthStr);
-    if (!monthExists && expenses.recurring.length > 0) {
-      const newMonthEntry = {
-        month: currentMonthStr,
-        items: expenses.recurring.map(item => ({ ...item })) 
-      };
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        { $push: { "expenses.monthly": newMonthEntry } }
-      );
-      expenses.monthly.push(newMonthEntry);
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user id" });
     }
-    res.status(200).json(expenses);
+
+    const user = await db.collection("users").findOne({
+      _id: new ObjectId(userId),
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const monthlyExpenses = Array.isArray(user?.expenses?.monthly)
+      ? user.expenses.monthly.filter(
+          (item) => String(item?.category || "").toLowerCase().trim() !== "debt"
+        )
+      : [];
+
+    return res.status(200).json(monthlyExpenses);
   } catch (err) {
-    console.error("Expense sync error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Get expenses error:", err);
+    return res.status(500).json({
+      error: "Server error fetching expenses",
+      details: err.message,
+    });
   }
 });
 
 router.post("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, amount, type, date } = req.body; 
     const db = await connectDB();
-    const currentMonthStr = new Date(date).toISOString().slice(0, 7);
-    const newEntry = { name, amount: parseFloat(amount), date: new Date(date) };
-    if (type === "monthly" || type === "recurring") {
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        { $push: { "expenses.recurring": newEntry }}
-      );
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId), "expenses.monthly.month": currentMonthStr },
-        { $push: { "expenses.monthly.$.items": newEntry }}
-      );
-    } else {
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        { $push: { "expenses.one_time": newEntry }}
-      );
-    }
-    res.status(200).json({ message: "Added" });
-  } catch (err) { res.status(500).send(err); }
-});
 
-router.delete("/:userId/:expenseName", async (req, res) => {
-  try {
-    const { userId, expenseName } = req.params;
-    const { category, date } = req.body;
-    const db = await connectDB();
-    console.log(`Attempting to delete ${expenseName} in category: ${category}`);
-    if (category === "one_time") {
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        { $pull: { "expenses.one_time": { name: expenseName } } }
-      );
-    } else {
-      const targetMonth = new Date(date).toISOString().slice(0, 7);
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        { $pull: { "expenses.monthly.$[m].items": { name: expenseName } } },
-        { arrayFilters: [{ "m.month": targetMonth }] }
-      );
+    console.log("Incoming expense userId:", userId);
+    console.log("Incoming expense body:", req.body);
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user id" });
     }
-    res.status(200).json({ message: "Deleted" });
+
+    const user = await db.collection("users").findOne({
+      _id: new ObjectId(userId),
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const newExpense = {
+      _id: new ObjectId(),
+      name: req.body.name || "",
+      amount: Number(req.body.amount) || 0,
+      category: "expense",
+      type: req.body.type || "",
+      frequency: req.body.frequency || "monthly",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $push: {
+          "expenses.monthly": newExpense,
+        },
+      }
+    );
+
+    console.log("Expense update result:", result);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(201).json({
+      message: "Expense added successfully",
+      expense: newExpense,
+    });
   } catch (err) {
-    res.status(500).json({ error: "Delete failed" });
+    console.error("Add expense error:", err);
+    return res.status(500).json({
+      error: "Server error adding expense",
+      details: err.message,
+    });
   }
 });
 
-router.put("/:userId/:oldName", async (req, res) => {
+router.put("/:userId/:expenseId", async (req, res) => {
   try {
-    const { userId, oldName } = req.params;
-    const { newData, category } = req.body;
+    const { userId, expenseId } = req.params;
+    const { newData } = req.body;
     const db = await connectDB();
-    if (category === "one_time") {
-      const result = await db.collection("users").updateOne(
-        { _id: new ObjectId(userId), "expenses.one_time.name": oldName },
-        { $set: { 
-            "expenses.one_time.$.name": newData.name,
-            "expenses.one_time.$.amount": parseFloat(newData.amount),
-            "expenses.one_time.$.date": new Date(newData.date)
-        }}
-      );
-      console.log("Edit One-Time Matched:", result.matchedCount);
-    } else {
-      const targetMonth = new Date(newData.date).toISOString().slice(0, 7);
-      await db.collection("users").updateOne(
-        { _id: new ObjectId(userId) },
-        { $set: { 
-            "expenses.monthly.$[m].items.$[i].name": newData.name,
-            "expenses.monthly.$[m].items.$[i].amount": parseFloat(newData.amount),
-            "expenses.monthly.$[m].items.$[i].date": new Date(newData.date)
-        }},
-        { arrayFilters: [{ "m.month": targetMonth }, { "i.name": oldName }] }
-      );
+
+    if (!ObjectId.isValid(userId) || !ObjectId.isValid(expenseId)) {
+      return res.status(400).json({ error: "Invalid id" });
     }
-    res.status(200).json({ message: "Updated" });
-  } catch (err) { res.status(500).json({ error: "Failed" }); }
+
+    const result = await db.collection("users").updateOne(
+      {
+        _id: new ObjectId(userId),
+        "expenses.monthly._id": new ObjectId(expenseId),
+      },
+      {
+        $set: {
+          "expenses.monthly.$.name": newData.name || "",
+          "expenses.monthly.$.amount": Number(newData.amount) || 0,
+          "expenses.monthly.$.category": "expense",
+          "expenses.monthly.$.type": newData.type || "",
+          "expenses.monthly.$.frequency": newData.frequency || "monthly",
+          "expenses.monthly.$.updatedAt": new Date(),
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Expense not found" });
+    }
+
+    return res.status(200).json({ message: "Expense updated" });
+  } catch (err) {
+    console.error("Update expense error:", err);
+    return res.status(500).json({
+      error: "Update failed",
+      details: err.message,
+    });
+  }
+});
+
+router.delete("/:userId/:expenseId", async (req, res) => {
+  try {
+    const { userId, expenseId } = req.params;
+    const db = await connectDB();
+
+    if (!ObjectId.isValid(userId) || !ObjectId.isValid(expenseId)) {
+      return res.status(400).json({ error: "Invalid id" });
+    }
+
+    const result = await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $pull: {
+          "expenses.monthly": { _id: new ObjectId(expenseId) },
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({ message: "Expense deleted" });
+  } catch (err) {
+    console.error("Delete expense error:", err);
+    return res.status(500).json({
+      error: "Delete failed",
+      details: err.message,
+    });
+  }
 });
 
 module.exports = router;
