@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+
 /*export default */function Profile() {
   //const [user, setUser] = useState(null);
   //const [message, setMessage] = useState(""); 
@@ -8,8 +9,13 @@ import { useEffect, useState } from "react";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+function Profile() {
+  const [user, setUser] = useState(null);
+
+
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
+    const storedUser = localStorage.getItem("user");
+
 
     if (!userId) {
       //setMessage("Please log in to view your profile.");
@@ -90,20 +96,16 @@ import { useEffect, useState } from "react";
   } */
   
 
-  const fullName =
-    user?.name && typeof user.name === "object"
-      ? `${user.name.first || ""} ${user.name.last || ""}`.trim()
-      : user?.name || "N/A";
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  };
 
-  const monthlyExpenses = Array.isArray(user?.expenses?.monthly)
-    ? user.expenses.monthly
-    : [];
-
-  const expensesTotal = monthlyExpenses.reduce((total, expense) => {
-    return total + (Number(expense?.amount) || 0);
-  }, 0);
-
+  if (!user) {
+    return <h2>Please log in to view your profile.</h2>;
+  }
   return (
+
     /*<div
       style={{
         maxWidth: "750px",
@@ -116,85 +118,21 @@ import { useEffect, useState } from "react";
     >
       <h1 style={{ textAlign: "center", marginBottom: "25px" }}>Profile</h1>
 
-      <div style={{ lineHeight: "2", fontSize: "16px" }}>
-        <p>
-          <strong>Username:</strong> {user?.username || "N/A"}
-        </p>
+    <div style={{ textAlign: "center" }}>
+      <h1>Profile</h1>
 
-        <p>
-          <strong>Name:</strong> {fullName || "N/A"}
-        </p>
 
-        <p>
-          <strong>Email:</strong> {user?.email || "N/A"}
-        </p>
+      <h2>Welcome, {user.username}.</h2>
 
-        <p>
-          <strong>Income:</strong> ${Number(user?.income || 0).toLocaleString()}
-        </p>
+      <div style={{ marginTop: "20px" }}>
+        <p><strong>Email:</strong> {user.email}</p>
 
-        <p>
-          <strong>Monthly Expenses Total:</strong> ${expensesTotal.toLocaleString()}
-        </p>
-
-        <p>
-          <strong>Date of Birth:</strong> {user?.date_of_birth || "N/A"}
-        </p>
+        {user.name && (
+          <p>
+            <strong>Name:</strong> {user.name.first} {user.name.last}
+          </p>
+        )}
       </div>
-
-      {monthlyExpenses.length > 0 && (
-        <div style={{ marginTop: "30px" }}>
-          <h2>Monthly Expenses</h2>
-
-          {monthlyExpenses.map((expense, index) => (
-            <div
-              key={index}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "15px",
-                marginBottom: "15px",
-              }}
-            >
-              <p>
-                <strong>Name:</strong> {expense?.name || "N/A"}
-              </p>
-
-              <p>
-                <strong>Amount:</strong> $
-                {Number(expense?.amount || 0).toLocaleString()}
-              </p>
-
-              <p>
-                <strong>Category:</strong> {expense?.category || "N/A"}
-              </p>
-
-              {expense?.category === "debt" && (
-                <>
-                  <p>
-                    <strong>Debt Type:</strong> {expense?.type || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Current Balance:</strong> $
-                    {Number(expense?.current_balance || 0).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Interest Rate:</strong> {expense?.interest_rate || 0}%
-                  </p>
-                  <p>
-                    <strong>Minimum Payment:</strong> $
-                    {Number(expense?.minimum_payment || 0).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Current Payment:</strong> $
-                    {Number(expense?.current_payment || 0).toLocaleString()}
-                  </p>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   */
  <div style={{ textAlign: "center", padding: "24px" }}>
@@ -254,6 +192,9 @@ import { useEffect, useState } from "react";
       </div>
     </div>
  );
+
+
+
 }
 
 export default Profile;
