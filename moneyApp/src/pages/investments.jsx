@@ -20,11 +20,14 @@ export default function Investments() {
 
   return (
     <section className="page investments-page">
-      <h1>Investments</h1>
-      <p>
+      <div className = "investments-hero">
+        <h1>Investments</h1>
+        <p text-style: center>
         Compare low-risk savings, retirement investing, and stock exposure using your current
         financial situation.
-      </p>
+        </p>
+      </div>
+      
 
       <InvestmentProfileForm profile={profile} setProfile={setProfile} />
       <RecommendationSummary profile={profile} />
