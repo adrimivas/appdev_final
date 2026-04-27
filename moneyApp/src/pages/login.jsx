@@ -31,7 +31,10 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
       });
 
       const text = await response.text();
@@ -44,13 +47,12 @@ function Login() {
         data = { message: text || "Invalid server response" };
       }
 
-     if (response.ok) {
-  const userToStore = data.user || data;
-  localStorage.setItem("userId", data.user.id);
-navigate("/profile");
-} else {
-  setMessage(data.message || "Login failed");
-}
+      if (response.ok) {
+        localStorage.setItem("userId", data.user.id);
+        navigate("/profile");
+      } else {
+        setMessage(data.message || "Login failed");
+      }
     } catch (error) {
       console.error("Login error:", error);
       setMessage(`Login failed: ${error.message}`);

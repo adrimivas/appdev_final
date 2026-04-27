@@ -3,11 +3,12 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
+
 const debtRoutes = require("./moneyApp/src/routes/debts.cjs");
 const expenseRoutes = require("./moneyApp/src/routes/expenses.cjs");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
@@ -54,8 +55,11 @@ async function startServer() {
           return res.status(400).json({ message: "Missing required fields" });
         }
 
+        const normalizedUsername = username.trim();
+        const normalizedEmail = email.trim().toLowerCase();
+
         const existingUser = await usersCollection.findOne({
-          $or: [{ username }, { email }],
+          $or: [{ username: normalizedUsername }, { email: normalizedEmail }],
         });
 
         if (existingUser) {
@@ -79,12 +83,12 @@ async function startServer() {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = {
-          username: username.trim(),
+          username: normalizedUsername,
           name: {
             first: name.first.trim(),
             last: name.last.trim(),
           },
-          email: email.trim().toLowerCase(),
+          email: normalizedEmail,
           password: hashedPassword,
           income: Number(income) || 0,
           expenses: {
@@ -98,20 +102,29 @@ async function startServer() {
         const userId = userResult.insertedId;
 
         if (debtExpenses.length > 0) {
-          const debtDocs = debtExpenses.map((debt) => ({
-            user_id: userId,
-            name: debt.name || "",
-            type: debt.type || "",
-            amount: Number(debt.amount) || 0,
-            current_balance: Number(debt.current_balance) || 0,
-            interest_rate: Number(debt.interest_rate) || 0,
-            minimum_payment: Number(debt.minimum_payment) || 0,
-            current_payment: Number(debt.current_payment) || 0,
-            createdAt: new Date(),
-          }));
+  const debtDocs = debtExpenses.map((debt) => ({
+    user_id: userId,
+    name: debt.name || "",
+    type: debt.type || "",
+    amount: Number(debt.amount) || 0,
+    original_balance:
+      Number(debt.original_balance) ||
+      Number(debt.original_amount) ||
+      Number(debt.current_balance) ||
+      0,
+    current_balance:
+      Number(debt.current_balance) ||
+      Number(debt.original_balance) ||
+      Number(debt.original_amount) ||
+      0,
+    interest_rate: Number(debt.interest_rate) || 0,
+    minimum_payment: Number(debt.minimum_payment) || 0,
+    current_payment: Number(debt.current_payment) || 0,
+    createdAt: new Date(),
+  }));
 
-          await debtsCollection.insertMany(debtDocs);
-        }
+  await debtsCollection.insertMany(debtDocs);
+}
 
         console.log("Registered user with id:", userId);
 
@@ -129,7 +142,7 @@ async function startServer() {
 
     app.post("/login", async (req, res) => {
       try {
-        const { username, password } = req.body;
+        let { username, password } = req.body;
 
         if (!username || !password) {
           return res
@@ -137,9 +150,34 @@ async function startServer() {
             .json({ message: "Username and password are required" });
         }
 
+        username = username.trim();
+
         const user = await usersCollection.findOne({ username });
 
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        if (!user) {
+          return res
+            .status(401)
+            .json({ message: "Invalid username or password" });
+        }
+
+        let passwordMatch = false;
+
+        if (typeof user.password === "string" && user.password.startsWith("$2")) {
+          passwordMatch = await bcrypt.compare(password, user.password);
+        } else {
+          passwordMatch = password === user.password;
+
+          if (passwordMatch) {
+            const newHashedPassword = await bcrypt.hash(password, 10);
+
+            await usersCollection.updateOne(
+              { _id: user._id },
+              { $set: { password: newHashedPassword } }
+            );
+          }
+        }
+
+        if (!passwordMatch) {
           return res
             .status(401)
             .json({ message: "Invalid username or password" });
@@ -174,15 +212,18 @@ async function startServer() {
         }).toArray();
 
         const debtExpenses = debts.map((debt) => ({
-          name: debt.name || "",
-          amount: Number(debt.amount) || 0,
-          category: "debt",
-          type: debt.type || "",
-          current_balance: Number(debt.current_balance) || 0,
-          interest_rate: Number(debt.interest_rate) || 0,
-          minimum_payment: Number(debt.minimum_payment) || 0,
-          current_payment: Number(debt.current_payment) || 0,
-        }));
+  _id: debt._id,
+  name: debt.name || "",
+  amount: Number(debt.amount) || 0,
+  category: "debt",
+  type: debt.type || "",
+  original_amount: Number(debt.original_amount) || Number(debt.current_balance) || 0,
+  current_balance: Number(debt.current_balance) || 0,
+  interest_rate: Number(debt.interest_rate) || 0,
+  minimum_payment: Number(debt.minimum_payment) || 0,
+  current_payment: Number(debt.current_payment) || 0,
+  createdAt: debt.createdAt || null,
+}));
 
         return res.status(200).json({
           user: {
