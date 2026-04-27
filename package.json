@@ -4,6 +4,8 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
-    "mongodb": "^7.1.1"
+    "mongodb": "^7.1.1",
+    "recharts": "^3.8.1",
+    "swiper": "^12.1.3"
   }
 }

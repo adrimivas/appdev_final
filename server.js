@@ -266,6 +266,7 @@ async function startServer() {
 
     app.use("/api/debts", debtRoutes);
     app.use("/api/expenses", expenseRoutes);
+    app.use("/api/news", require("./moneyApp/src/routes/news.cjs"));
 
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
