@@ -14,7 +14,6 @@ const API_BASE = "http://127.0.0.1:5000";
 function Profile() {
   console.log("API_BASE is:", API_BASE);
   const [user, setUser] = useState(null);
-<<<<<<< profile
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -51,39 +50,10 @@ function Profile() {
         setLoading(false);
       }
     }
-=======
-  const [message, setMessage] = useState("Loading profile...");
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-
-        if (!userId) {
-          setMessage("Please log in to view your profile.");
-          return;
-        }
-
-        const response = await fetch(`http://localhost:5001/users/${userId}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          setMessage(data.message || "Failed to load profile.");
-          return;
-        }
-
-        setUser(data.user);
-      } catch (error) {
-        console.error("Profile fetch error:", error);
-        setMessage("Failed to load profile.");
-      }
-    };
->>>>>>> main
 
     fetchUser();
   }, []);
 
-<<<<<<< profile
   const monthlyItems = user?.expenses?.monthly || [];
 
   const debts = useMemo(() => {
@@ -133,10 +103,6 @@ function Profile() {
 
   if (error) {
     return <div style={{ padding: "24px" }}>{error}</div>;
-=======
-  if (!user) {
-    return <h2>{message}</h2>;
->>>>>>> main
   }
 
   return (
@@ -169,7 +135,6 @@ function Profile() {
           </div>
         </section>
 
-<<<<<<< profile
         <section style={styles.card}>
           <h3>Debt Breakdown</h3>
 
@@ -218,19 +183,6 @@ function Profile() {
             </ul>
           )}
         </section>
-=======
-        {user.name && (
-          <p>
-            <strong>Name:</strong> {user.name.first} {user.name.last}
-          </p>
-        )}
-
-        <p><strong>Income:</strong> ${user.income}</p>
-
-        {user.date_of_birth && (
-          <p><strong>Date of Birth:</strong> {user.date_of_birth}</p>
-        )}
->>>>>>> main
       </div>
 
       <aside style={styles.sidebar}>
