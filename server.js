@@ -102,20 +102,29 @@ async function startServer() {
         const userId = userResult.insertedId;
 
         if (debtExpenses.length > 0) {
-          const debtDocs = debtExpenses.map((debt) => ({
-            user_id: userId,
-            name: debt.name || "",
-            type: debt.type || "",
-            amount: Number(debt.amount) || 0,
-            current_balance: Number(debt.current_balance) || 0,
-            interest_rate: Number(debt.interest_rate) || 0,
-            minimum_payment: Number(debt.minimum_payment) || 0,
-            current_payment: Number(debt.current_payment) || 0,
-            createdAt: new Date(),
-          }));
+  const debtDocs = debtExpenses.map((debt) => ({
+    user_id: userId,
+    name: debt.name || "",
+    type: debt.type || "",
+    amount: Number(debt.amount) || 0,
+    original_balance:
+      Number(debt.original_balance) ||
+      Number(debt.original_amount) ||
+      Number(debt.current_balance) ||
+      0,
+    current_balance:
+      Number(debt.current_balance) ||
+      Number(debt.original_balance) ||
+      Number(debt.original_amount) ||
+      0,
+    interest_rate: Number(debt.interest_rate) || 0,
+    minimum_payment: Number(debt.minimum_payment) || 0,
+    current_payment: Number(debt.current_payment) || 0,
+    createdAt: new Date(),
+  }));
 
-          await debtsCollection.insertMany(debtDocs);
-        }
+  await debtsCollection.insertMany(debtDocs);
+}
 
         console.log("Registered user with id:", userId);
 
@@ -203,15 +212,18 @@ async function startServer() {
         }).toArray();
 
         const debtExpenses = debts.map((debt) => ({
-          name: debt.name || "",
-          amount: Number(debt.amount) || 0,
-          category: "debt",
-          type: debt.type || "",
-          current_balance: Number(debt.current_balance) || 0,
-          interest_rate: Number(debt.interest_rate) || 0,
-          minimum_payment: Number(debt.minimum_payment) || 0,
-          current_payment: Number(debt.current_payment) || 0,
-        }));
+  _id: debt._id,
+  name: debt.name || "",
+  amount: Number(debt.amount) || 0,
+  category: "debt",
+  type: debt.type || "",
+  original_amount: Number(debt.original_amount) || Number(debt.current_balance) || 0,
+  current_balance: Number(debt.current_balance) || 0,
+  interest_rate: Number(debt.interest_rate) || 0,
+  minimum_payment: Number(debt.minimum_payment) || 0,
+  current_payment: Number(debt.current_payment) || 0,
+  createdAt: debt.createdAt || null,
+}));
 
         return res.status(200).json({
           user: {
