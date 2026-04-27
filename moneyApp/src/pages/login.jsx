@@ -23,14 +23,18 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("About to fetch:", "http://localhost:5001/login");
 
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch("http://localhost:5001/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
       });
 
       const text = await response.text();
@@ -43,13 +47,12 @@ function Login() {
         data = { message: text || "Invalid server response" };
       }
 
-     if (response.ok) {
-  const userToStore = data.user || data;
-  localStorage.setItem("userId", data.user.id);
-navigate("/profile");
-} else {
-  setMessage(data.message || "Login failed");
-}
+      if (response.ok) {
+        localStorage.setItem("userId", data.user.id);
+        navigate("/profile");
+      } else {
+        setMessage(data.message || "Login failed");
+      }
     } catch (error) {
       console.error("Login error:", error);
       setMessage(`Login failed: ${error.message}`);
