@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import useFinnhubNews from "../hooks/useFinnhubNews";
 
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = "http://127.0.0.1:5001";
 
 function Profile() {
   console.log("API_BASE is:", API_BASE);
@@ -142,7 +142,7 @@ function Profile() {
             <p>No debt data available.</p>
           ) : (
             <div style={{ width: "100%", height: 340 }}>
-              <ResponsiveContainer>
+              {/*<ResponsiveContainer>
                 <PieChart>
                   <Pie
                     data={debtChartData}
@@ -162,7 +162,7 @@ function Profile() {
                   <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
                   <Legend />
                 </PieChart>
-              </ResponsiveContainer>
+              </ResponsiveContainer>  */}
             </div>
           )}
         </section>
