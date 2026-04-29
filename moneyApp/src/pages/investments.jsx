@@ -26,8 +26,7 @@ export default function Investments() {
         Compare low-risk savings, retirement investing, and stock exposure using your current
         financial situation.
         </p>
-      </div>
-      
+      </div> 
 
       <InvestmentProfileForm profile={profile} setProfile={setProfile} />
       <RecommendationSummary profile={profile} />
