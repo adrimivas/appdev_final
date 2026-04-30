@@ -15,13 +15,12 @@ export default function InvestmentProfileForm({ profile, setProfile }) {
 
                 <label>
                     Annual Income:
-                    <input
-                        name="annualIncome"
-                        type="number"
-                        value={profile.annualIncome}
-                        onChange={updateField}
-                        placeholder="75000"
-                    />
+                    <span> ${Number(profile.annualIncome || 0).toLocaleString()}</span>
+                </label>
+
+                <label>
+                    Age:
+                    <span> {profile.age}</span>
                 </label>
 
                 <label>
@@ -32,17 +31,6 @@ export default function InvestmentProfileForm({ profile, setProfile }) {
                         value={profile.availableToInvestNow}
                         onChange={updateField}
                         placeholder="10000"
-                    />
-                </label>
-
-                <label>
-                    Age:
-                    <input
-                        name="age"
-                        type="number"
-                        value={profile.age}
-                        onChange={updateField}
-                        placeholder="30"
                     />
                 </label>
 
