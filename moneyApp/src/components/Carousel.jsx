@@ -28,7 +28,7 @@ export default function Carousel() {
         }
     ]
     useEffect(() => {
-        fetch("http://localhost:5000/api/news")
+        fetch("http://localhost:5001/api/news")
             .then(res => res.json())
             .then(data => setNews(data))
             .catch(err => console.error("News fetch error:", err));
