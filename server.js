@@ -249,6 +249,24 @@ async function startServer() {
       }
     });
 
+    app.put("/users/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { income } = req.body;
+        if (income === undefined) {
+          return res.status(400).json({ message: "Income is required" });
+        }
+        await usersCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { income: Number(income) || 0 } }
+        );
+        return res.json({ message: "Income updated successfully" });
+      } catch (err) {
+        console.error("Update income error:", err);
+        res.status(500).json({ message: "Failed to update income" });
+      }
+    });
+
     app.get("/users/:id/debts", async (req, res) => {
       try {
         const { id } = req.params;
