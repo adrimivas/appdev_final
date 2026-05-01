@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import useFinnhubNews from "../hooks/useFinnhubNews";
-<<<<<<< profile
 import { calculateAge } from "../utils/ageCalc";
 
-=======
->>>>>>> main
 const API_BASE = "http://127.0.0.1:5001";
 
 function buildPieGradient(data, colors) {
