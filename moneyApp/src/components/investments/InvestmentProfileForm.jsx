@@ -15,14 +15,35 @@ export default function InvestmentProfileForm({ profile, setProfile }) {
 
                 <label>
                     Annual Income:
+                    <input
+                        name="annualIncome"
+                        type="number"
+                        value={profile.annualIncome}
+                        onChange={updateField}
+                        placeholder="75000"
+                    />
                 </label>
 
                 <label>
                     Available to invest now:
+                    <input
+                        name="availableToInvestNow"
+                        type="number"
+                        value={profile.availableToInvestNow}
+                        onChange={updateField}
+                        placeholder="10000"
+                    />
                 </label>
 
                 <label>
                     Age:
+                    <input
+                        name="age"
+                        type="number"
+                        value={profile.age}
+                        onChange={updateField}
+                        placeholder="30"
+                    />
                 </label>
 
                 <label>
@@ -55,7 +76,7 @@ export default function InvestmentProfileForm({ profile, setProfile }) {
 
                 <label className="checkbox-row">
                     <input
-                        name="emergencyFundRead"
+                        name="emergencyFundReady"
                         type="checkbox"
                         checked={profile.emergencyFundReady}
                         onChange={updateField}
@@ -85,4 +106,4 @@ export default function InvestmentProfileForm({ profile, setProfile }) {
             </div>
         </section>
     )
-}
+} 

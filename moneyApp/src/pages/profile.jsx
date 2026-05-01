@@ -1,15 +1,62 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
 import useFinnhubNews from "../hooks/useFinnhubNews";
-
 const API_BASE = "http://127.0.0.1:5001";
+
+function buildPieGradient(data, colors) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  if (!total) {
+    return "conic-gradient(#e5e7eb 0deg 360deg)";
+  }
+
+  let currentAngle = 0;
+
+  const segments = data.map((item, index) => {
+    const sliceAngle = (item.value / total) * 360;
+    const start = currentAngle;
+    const end = currentAngle + sliceAngle;
+    currentAngle = end;
+
+    return `${colors[index % colors.length]} ${start}deg ${end}deg`;
+  });
+
+  return `conic-gradient(${segments.join(", ")})`;
+}
+
+function DebtPieChart({ data, colors }) {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const background = buildPieGradient(data, colors);
+
+  return (
+    <div style={styles.customChartSection}>
+      <div
+        style={{
+          ...styles.customPie,
+          background,
+        }}
+      />
+      <ul style={styles.customLegend}>
+        {data.map((item, index) => {
+          const percent = total ? ((item.value / total) * 100).toFixed(0) : 0;
+
+          return (
+            <li key={`${item.name}-${index}`} style={styles.customLegendItem}>
+              <span
+                style={{
+                  ...styles.legendColor,
+                  backgroundColor: colors[index % colors.length],
+                }}
+              />
+              <span>
+                {item.name}: ${item.value.toLocaleString()} ({percent}%)
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 function Profile() {
   console.log("API_BASE is:", API_BASE);
@@ -89,11 +136,17 @@ function Profile() {
   }, [totalExpenses, income]);
 
   const debtChartData = useMemo(() => {
-    return debts.map((debt) => ({
-      name: debt.name || debt.type || "Debt",
-      value: Number(debt.current_balance) || Number(debt.amount) || 0,
-    }));
+    return debts.map((debt, index) => {
+      const value = Number(debt?.current_balance ?? debt?.amount ?? 0);
+
+      return {
+        name: debt?.name?.trim() || debt?.type?.trim() || `Debt ${index + 1}`,
+        value: Number.isFinite(value) ? value : 0,
+      };
+    })
+    .filter((item) => item.value > 0);
   }, [debts]);
+    
 
   const COLORS = ["#4f46e5", "#06b6d4", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"];
 
@@ -141,28 +194,8 @@ function Profile() {
           {debtChartData.length === 0 ? (
             <p>No debt data available.</p>
           ) : (
-            <div style={{ width: "100%", height: 340 }}>
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    data={debtChartData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={110}
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {debtChartData.map((entry, index) => (
-                      <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+            <div style = {styles.chartWrapper}>
+              <DebtPieChart data = {debtChartData} colors = {COLORS} />
             </div>
           )}
         </section>
@@ -296,6 +329,52 @@ const styles = {
     fontSize: "0.85rem",
     color: "#6b7280",
   },
+  chartWrapper: {
+  width: "100%",
+  minHeight: 320,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  },
+  customChartSection: {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: "20px",
+  width: "100%",
+},
+
+customPie: {
+  width: "220px",
+  height: "220px",
+  borderRadius: "50%",
+  border: "12px solid #fff",
+  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+},
+
+customLegend: {
+  listStyle: "none",
+  padding: 0,
+  margin: 0,
+  width: "100%",
+  maxWidth: "420px",
+  display: "grid",
+  gap: "10px",
+},
+
+customLegendItem: {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  fontSize: "0.95rem",
+},
+
+legendColor: {
+  width: "14px",
+  height: "14px",
+  borderRadius: "4px",
+  flexShrink: 0,
+},
 };
 
 export default Profile;
