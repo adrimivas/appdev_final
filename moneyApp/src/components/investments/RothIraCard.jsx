@@ -14,7 +14,8 @@ export default function RothIraCard({ rothInputs, setRothInputs }) {
 
   return (
     <section className="investment-card">
-      <h3>High Yield Savings Account</h3> 
+      <h3>Roth IRA</h3>
+
       <div className="form-grid">
         <label>
           Monthly contribution
