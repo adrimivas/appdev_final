@@ -8,6 +8,7 @@ import {
   Legend,
 } from "recharts";
 import useFinnhubNews from "../hooks/useFinnhubNews";
+import { calculateAge } from "../utils/ageCalc";
 
 const API_BASE = "http://127.0.0.1:5001";
 
@@ -16,6 +17,14 @@ function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isEditingIncome, setIsEditingIncome] = useState(false);
+  const [incomeValue, setIncomeValue] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      setIncomeValue(user.income || 0);
+    }
+  }, [user]);
 
   const {
     articles,
@@ -43,6 +52,7 @@ function Profile() {
         }
 
         setUser(data.user);
+        setIncomeValue(data.user.income || 0);
       } catch (err) {
         console.error("Profile error:", err);
         setError(err.message || "Unable to load profile.");
@@ -53,6 +63,24 @@ function Profile() {
 
     fetchUser();
   }, []);
+
+  async function saveIncome() {
+    try {
+      const userId = localStorage.getItem("userId");
+      await fetch(`${API_BASE}/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ income: incomeValue }),
+      });
+      setUser((prev) => ({
+        ...prev,
+        income: incomeValue,
+      }));
+      setIsEditingIncome(false);
+    } catch (err) {
+      console.error("Failed to update income:", err);
+    }
+  }
 
   const monthlyItems = user?.expenses?.monthly || [];
 
@@ -81,12 +109,14 @@ function Profile() {
     }, 0);
   }, [monthlyItems]);
 
-  const income = Number(user?.income) || 0;
+  const age = user?.date_of_birth
+    ? calculateAge(user.date_of_birth)
+    : "N/A";
 
   const expenseRatio = useMemo(() => {
-    if (!income) return 0;
-    return (totalExpenses / income) * 100;
-  }, [totalExpenses, income]);
+    if (!incomeValue) return 0;
+    return (totalExpenses / incomeValue) * 100;
+  }, [totalExpenses, incomeValue]);
 
   const debtChartData = useMemo(() => {
     return debts.map((debt) => ({
@@ -115,7 +145,26 @@ function Profile() {
           <div style={styles.statsGrid}>
             <div style={styles.statBox}>
               <span style={styles.label}>Income</span>
-              <span>${income.toLocaleString()}</span>
+              {isEditingIncome ? (
+                <div>
+                  <input
+                    type="number"
+                    value={incomeValue}
+                    onChange={(e) => setIncomeValue(Number(e.target.value))}
+                  />
+                  <button onClick={saveIncome}>Save</button>
+                  <button onClick={() => setIsEditingIncome(false)}>Cancel</button>
+                </div>
+              ) : (
+                <span onClick={() => setIsEditingIncome(true)} style={{ cursor: 'pointer' }}>
+                  ${Number(incomeValue).toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            <div style={styles.statBox}>
+              <span style={styles.label}>Age</span>
+              <span>{age}</span>
             </div>
 
             <div style={styles.statBox}>
