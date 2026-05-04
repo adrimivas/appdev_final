@@ -596,6 +596,7 @@ export default function AdvicePage() {
   const [userId, setUserId] = useState(null);
   const [debts, setDebts] = useState([]);
   const [expenses, setExpenses] = useState([]);
+  const [income, setIncome] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const [profile] = useSessionState(
@@ -622,6 +623,7 @@ export default function AdvicePage() {
       try {
         const response = await fetch(`http://localhost:5001/users/${userId}`);
         const data = await response.json();
+        setIncome((Number(data?.user?.income) || 0) / 12);
 
         if (!response.ok) {
           console.error("Failed to fetch user data:", data);
@@ -675,14 +677,20 @@ export default function AdvicePage() {
       return 0;
     };
 
-   const income = pickNumber([
+const profileIncome = pickNumber([
   profile?.monthlyIncome,
   profile?.income,
   profile?.takeHomePay,
   profile?.monthly_take_home,
   profile?.netMonthlyIncome,
-  profile?.annualIncome ? Number(profile.annualIncome) / 12 : 0,
 ]);
+
+const annualMonthlyIncome =
+  Number(profile?.annualIncome) > 0
+    ? Number(profile.annualIncome) / 12
+    : 0;
+
+const monthlyIncome = income || profileIncome || annualMonthlyIncome;
 
     const plannedSavings = pickNumber([
       profile?.monthlySavings,
@@ -709,14 +717,14 @@ export default function AdvicePage() {
       0
     );
     const leftover =
-      income -
-      nonDebtExpenses -
-      minimumDebtPayments -
-      plannedSavings -
-      funMoney;
+  monthlyIncome -
+  nonDebtExpenses -
+  minimumDebtPayments -
+  plannedSavings -
+  funMoney;
 
     return {
-      income,
+      income: monthlyIncome,
       plannedSavings,
       funMoney,
       nonDebtExpenses,
@@ -724,7 +732,7 @@ export default function AdvicePage() {
       leftover,
       allocatable: Math.max(leftover, 0),
     };
-  }, [profile, expenses, debts]);
+  }, [profile, expenses, debts, income]);
 
   const advice = useMemo(() => {
     return buildAdvice(
@@ -824,7 +832,7 @@ export default function AdvicePage() {
                 </div>
                 <div style={metricCardStyle("#e5e7eb")}>
                   <div style={{ color: "#666", fontSize: 13 }}>
-                    Savings goal
+                    Savings goal (taken from investments)
                   </div>
                   <div style={{ fontWeight: 800, fontSize: 24, marginTop: 6 }}>
                     {money(cashFlow.plannedSavings)}
