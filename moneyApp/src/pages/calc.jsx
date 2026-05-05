@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import useSessionState from "../hooks/useSessionState";
+import { defaultInvestmentProfile } from "../constants/appConstants";
+
 
 function formatMoney(value) {
   return Number(value || 0).toLocaleString(undefined, {
@@ -31,12 +34,12 @@ function sectionCardStyle() {
 function inputStyle() {
   return {
     width: "100%",
-    padding: "22px 28px",
-    fontSize: 24,
-    borderRadius: 20,
-    border: "2px solid #b9b9b9",
-    outline: "none",
+    padding: "14px",
+    fontSize: 18,
+    borderRadius: 10,
+    border: "1px solid #aaa",
     boxSizing: "border-box",
+    outline: "none",
     background: "#fff",
   };
 }
@@ -44,11 +47,10 @@ function inputStyle() {
 function labelStyle() {
   return {
     display: "block",
-    marginBottom: 14,
+    marginBottom: 8,
     fontSize: 18,
     color: "#746c82",
     textAlign: "center",
-    fontWeight: 500,
   };
 }
 
@@ -792,6 +794,11 @@ function BudgetCalculator() {
 }
 
 function EmergencyCalculator() {
+  const [profile, setProfile] = useSessionState(
+    "investment-profile",
+    defaultInvestmentProfile
+  );
+
   const [monthly, setMonthly] = useState(2000);
   const [saved, setSaved] = useState(3000);
   const [months, setMonths] = useState(6);
@@ -804,6 +811,31 @@ function EmergencyCalculator() {
 
     return { target, needed, time };
   }, [monthly, saved, months, saveRate]);
+
+  function autofillRecommendation() {
+    const recommendedMonthly = Number(profile?.monthlyIncome || 4000) * 0.5;
+    const recommendedMonths = 6;
+    const recommendedSaved = Number(profile?.emergencyFundSaved || 0);
+
+    setMonthly(Math.round(recommendedMonthly));
+    setMonths(recommendedMonths);
+    setSaved(recommendedSaved);
+    setSaveRate(300);
+  }
+
+  function saveFundPlan() {
+    setProfile((prev) => ({
+      ...prev,
+      emergencyFundReady: result.needed === 0,
+      emergencyFundMonthlyExpenses: monthly,
+      emergencyFundSaved: saved,
+      emergencyFundGoalMonths: months,
+      emergencyFundTarget: result.target,
+      emergencyFundStillNeeded: result.needed,
+      emergencyFundMonthlySavings: saveRate,
+      emergencyFundMonthsToGoal: result.time,
+    }));
+  }
 
   return (
     <section
@@ -832,158 +864,151 @@ function EmergencyCalculator() {
           An emergency fund should generally cover three to six months of essential
           living expenses.
         </p>
+
+        <div
+          style={{
+            marginTop: 18,
+            display: "flex",
+            justifyContent: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+  type="button"
+  onClick={autofillRecommendation}
+  style={{
+    padding: "10px 16px",
+    borderRadius: 10,
+    border: "1px solid #bbb",
+    background: "#fff",
+    cursor: "pointer",
+    fontSize: 14,
+  }}
+>
+  Autofill with recommendation
+</button>
+          
+        </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gap: 16,
-          maxWidth: 520,
-          margin: "0 auto",
-        }}
-      >
+      <div style={{ display: "grid", gap: 16, maxWidth: 520, margin: "0 auto" }}>
         <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 8,
-              fontSize: 18,
-              color: "#746c82",
-              textAlign: "center",
-            }}
-          >
-            Essential Monthly Expenses
-          </label>
+          <label style={labelStyle()}>Essential Monthly Expenses</label>
           <input
             type="number"
             value={monthly}
             onChange={(e) => setMonthly(Number(e.target.value))}
-            style={{
-              width: "100%",
-              padding: 14,
-              fontSize: 18,
-              borderRadius: 10,
-              border: "1px solid #aaa",
-              boxSizing: "border-box",
-            }}
+            style={inputStyle()}
           />
         </div>
 
         <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 8,
-              fontSize: 18,
-              color: "#746c82",
-              textAlign: "center",
-            }}
-          >
-            Emergency Savings Already Set Aside
-          </label>
+          <label style={labelStyle()}>Emergency Savings Already Set Aside</label>
           <input
             type="number"
             value={saved}
             onChange={(e) => setSaved(Number(e.target.value))}
-            style={{
-              width: "100%",
-              padding: 14,
-              fontSize: 18,
-              borderRadius: 10,
-              border: "1px solid #aaa",
-              boxSizing: "border-box",
-            }}
+            style={inputStyle()}
           />
         </div>
 
         <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 8,
-              fontSize: 18,
-              color: "#746c82",
-              textAlign: "center",
-            }}
-          >
-            Emergency Fund Goal (Months)
-          </label>
+          <label style={labelStyle()}>Emergency Fund Goal (Months)</label>
           <input
             type="number"
             value={months}
             onChange={(e) => setMonths(Number(e.target.value))}
-            style={{
-              width: "100%",
-              padding: 14,
-              fontSize: 18,
-              borderRadius: 10,
-              border: "1px solid #aaa",
-              boxSizing: "border-box",
-            }}
+            style={inputStyle()}
           />
         </div>
 
         <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 8,
-              fontSize: 18,
-              color: "#746c82",
-              textAlign: "center",
-            }}
-          >
-            Amount Saved Per Month
-          </label>
+          <label style={labelStyle()}>Amount Saved Per Month</label>
           <input
             type="number"
             value={saveRate}
             onChange={(e) => setSaveRate(Number(e.target.value))}
-            style={{
-              width: "100%",
-              padding: 14,
-              fontSize: 18,
-              borderRadius: 10,
-              border: "1px solid #aaa",
-              boxSizing: "border-box",
-            }}
+            style={inputStyle()}
           />
         </div>
       </div>
 
-      <div
-        style={{
-          maxWidth: 520,
-          margin: "28px auto 0 auto",
-        }}
-      >
+      <div style={{ maxWidth: 520, margin: "28px auto 0 auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <tbody>
             <tr>
-              <td style={{ padding: "10px 0", fontSize: 18 }}>Emergency Fund Target</td>
+              <td style={{ padding: "10px 0", fontSize: 18 }}>
+                Emergency Fund Target
+              </td>
               <td style={{ padding: "10px 0", textAlign: "right", fontSize: 18 }}>
                 {formatMoney(result.target)}
               </td>
             </tr>
+
             <tr>
-              <td style={{ padding: "10px 0", fontSize: 18 }}>Amount Still Needed</td>
+              <td style={{ padding: "10px 0", fontSize: 18 }}>
+                Amount Still Needed
+              </td>
               <td style={{ padding: "10px 0", textAlign: "right", fontSize: 18 }}>
                 {formatMoney(result.needed)}
               </td>
             </tr>
+
             <tr>
-              <td style={{ padding: "10px 0", fontSize: 18 }}>Estimated Time to Reach Goal</td>
+              <td style={{ padding: "10px 0", fontSize: 18 }}>
+                Estimated Time to Reach Goal
+              </td>
               <td style={{ padding: "10px 0", textAlign: "right", fontSize: 18 }}>
                 {result.time} months
               </td>
             </tr>
           </tbody>
         </table>
+        <button
+  type="button"
+  onClick={saveFundPlan}
+  style={{
+    marginTop: 14,
+    width: "100%",
+    padding: 12,
+    borderRadius: 10,
+    border: "1px solid #bbb",
+    background: "#fff",
+    cursor: "pointer",
+    fontSize: 14,
+  }}
+>
+  Save fund plan
+</button>
+
+        {profile.emergencyFundReady && (
+          <button
+            type="button"
+            onClick={() =>
+              setProfile((prev) => ({
+                ...prev,
+                emergencyFundReady: false,
+              }))
+            }
+            style={{
+              marginTop: 18,
+              width: "100%",
+              padding: 14,
+              borderRadius: 12,
+              border: "1px solid #b9b9b9",
+              background: "#fff",
+              cursor: "pointer",
+              fontSize: 16,
+            }}
+          >
+            Remove completed emergency fund status
+          </button>
+        )}
       </div>
     </section>
   );
 }
-
 export default function CalculatorPage() {
   const [debts, setDebts] = useState([]);
   const [loadingDebts, setLoadingDebts] = useState(true);

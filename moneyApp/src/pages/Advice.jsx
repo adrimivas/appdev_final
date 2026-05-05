@@ -234,7 +234,6 @@ function getInvestmentReturnAssumptions(profile, cdData, rothData, stocksData) {
     comparableReturn: netComparableReturn,
   };
 }
-
 function buildAdvice(debts, assumptions, monthlyExtraCash, profile, rothData) {
   const totalBalance = debts.reduce((sum, debt) => sum + debt.balance, 0);
   const totalMin = debts.reduce((sum, debt) => sum + debt.minimumPayment, 0);
@@ -260,64 +259,120 @@ function buildAdvice(debts, assumptions, monthlyExtraCash, profile, rothData) {
   const hasHouse = getHasHouse(profile);
   const homeGoalYears = getHomeGoalYears(profile);
   const retirementFocus = wantsRetirementFocus(profile);
+
+  const emergencyFundReady = !!profile?.emergencyFundReady;
+  const emergencyFundStillNeeded = Number(profile?.emergencyFundStillNeeded || 0);
+  const emergencyFundMonthlySavings = Number(profile?.emergencyFundMonthlySavings || 0);
+  const emergencyFundMonthsToGoal = Number(profile?.emergencyFundMonthsToGoal || 0);
+
+  const highInterestDebtPresent =
+    !!profile?.highInterestDebtPresent || highInterestDebts.length > 0;
+
+  const hasEmployerRetirementPlan = !!profile?.hasEmployerRetirementPlan;
+  const employerMatchPercent = Number(profile?.employerMatchPercent || 0);
+  const retirementContributionPercent = Number(
+    profile?.retirementContributionPercent || 0
+  );
+  const vestingYears = Number(profile?.vestingYears || 0);
+
+  const employerMatchAvailable =
+    hasEmployerRetirementPlan && employerMatchPercent > 0;
+
+  const gettingFullMatch =
+    employerMatchAvailable &&
+    retirementContributionPercent >= employerMatchPercent;
+
   const rothRoomAnnual = getRothContributionRoom(rothData);
   const rothRoomMonthly = rothRoomAnnual / 12;
   const youngInvestor = age !== null && age <= 30;
+
   const homeSavingsPriority =
     hasHouse === false && homeGoalYears !== null && homeGoalYears <= 5;
+
   const longRunRetirementPriority =
     assumptions.years >= 10 && (youngInvestor || retirementFocus);
 
   let strategy = "mixed";
   let headline = "Use a balanced debt-paydown and investing approach.";
   let why =
-    "Your debt costs and expected investing returns are close enough that splitting extra money is likely the most practical choice.";
+    "Your debt costs, emergency savings, retirement benefits, and expected investing returns suggest splitting extra money across priorities.";
   let split = { debt: 50, roth: 25, cd: 10, stocks: 15 };
 
   if (monthlyExtraCash <= 0) {
-    strategy = "cash-flow-first";
-    headline = "Stabilize your cash flow before allocating extra money.";
-    why =
-      "There is no leftover money after income, bills, minimum debt payments, savings, and fun money, so the first priority is improving cash flow rather than reallocating surplus.";
-    split = { debt: 0, roth: 0, cd: 0, stocks: 0 };
-  } else if (
-    urgentDebts.length > 0 ||
-    highInterestDebts.length > 0 ||
-    weightedApr - assumptions.comparableReturn >= 2
-  ) {
-    strategy = "pay-debt-first";
-    headline = "Pay off high-interest debt first, then build investments.";
-    why =
-      "At least one debt is expensive enough that the guaranteed savings from faster payoff likely beat your realistic risk-adjusted investing return.";
-    split = { debt: 85, roth: 10, cd: 5, stocks: 0 };
-  } else if (homeSavingsPriority && weightedApr < 7) {
-    strategy = "home-fund-first";
-    headline =
-      "Build a house fund in safer accounts while paying debts on schedule.";
-    why =
-      "Because you do not own a home and may need the money within the next few years, preserving down-payment money in CDs or other low-volatility savings is usually more appropriate than taking heavy stock risk.";
-    split = { debt: 35, roth: 20, cd: 35, stocks: 10 };
-  } else if (
-    longRunRetirementPriority &&
-    rothRoomAnnual > 0 &&
-    weightedApr <= assumptions.rothExpected - 1.5
-  ) {
-    strategy = "roth-first";
-    headline =
-      "Prioritize maxing out your Roth IRA, then invest additional money strategically.";
-    why =
-      "You appear to have a long time horizon, which makes Roth IRA space especially valuable because the long-run tax-free growth can be hard to replace later.";
-    split = { debt: 25, roth: 50, cd: 5, stocks: 20 };
-  } else if (
-    weightedApr <= assumptions.comparableReturn - 2 &&
-    lowInterestDebts.length === debts.length
-  ) {
-    strategy = "invest-first";
-    headline = "Pay debts normally and put most extra money into investing.";
-    why =
-      "Your debts are relatively low-cost compared with your expected long-term investing return, so keeping debt payments normal and investing most of your surplus is likely stronger.";
-    split = { debt: 20, roth: 35, cd: 10, stocks: 35 };
-  }
+  strategy = "cash-flow-first";
+  headline = "Stabilize your cash flow before allocating extra money.";
+  why =
+    "There is no leftover money after income, bills, minimum debt payments, savings, and fun money, so the first priority is improving cash flow.";
+  split = { debt: 0, roth: 0, cd: 0, stocks: 0 };
+} else if (!emergencyFundReady) {
+  strategy = "emergency-fund-first";
+  headline = "Build your emergency fund before investing heavily.";
+  why =
+    emergencyFundStillNeeded > 0
+      ? `Your saved emergency fund plan shows you still need about ${money(
+          emergencyFundStillNeeded
+        )}, so most extra money should go toward safer savings first.`
+      : "Your emergency fund is not marked complete, so extra money should first go toward a safety cushion before taking more investment risk.";
+  split = {
+    debt: 20,
+    roth: employerMatchAvailable ? 15 : 0,
+    cd: employerMatchAvailable ? 65 : 80,
+    stocks: 0,
+  };
+} else if (
+  employerMatchAvailable &&
+  !gettingFullMatch &&
+  !highInterestDebtPresent
+) {
+  strategy = "employer-match-first";
+  headline = "Capture your employer retirement match before extra investing.";
+  why = `Your employer offers a ${percent(
+    employerMatchPercent
+  )} match, but your contribution is ${percent(
+    retirementContributionPercent
+  )}. Increasing contributions toward the match can be more valuable than regular taxable investing.`;
+  split = { debt: 25, roth: 45, cd: 5, stocks: 25 };
+} else if (
+  urgentDebts.length > 0 ||
+  highInterestDebtPresent ||
+  weightedApr - assumptions.comparableReturn >= 2
+) {
+  strategy = "pay-debt-first";
+  headline = "Pay off high-interest debt first, then build investments.";
+  why =
+    "At least one debt is expensive enough that the guaranteed savings from faster payoff likely beat your realistic risk-adjusted investing return.";
+  split = employerMatchAvailable
+    ? { debt: 75, roth: 20, cd: 5, stocks: 0 }
+    : { debt: 85, roth: 10, cd: 5, stocks: 0 };
+} else if (homeSavingsPriority && weightedApr < 7) {
+  strategy = "home-fund-first";
+  headline =
+    "Build a house fund in safer accounts while paying debts on schedule.";
+  why =
+    "Because you do not own a home and may need the money within the next few years, preserving down-payment money in CDs or other low-volatility savings is usually more appropriate than taking heavy stock risk.";
+  split = { debt: 35, roth: 20, cd: 35, stocks: 10 };
+} else if (
+  longRunRetirementPriority &&
+  rothRoomAnnual > 0 &&
+  weightedApr <= assumptions.rothExpected - 1.5
+) {
+  strategy = "roth-first";
+  headline =
+    "Prioritize retirement investing, then invest additional money strategically.";
+  why = employerMatchAvailable
+    ? "You have a long time horizon and an employer retirement plan, so retirement contributions should be protected before taxable investing."
+    : "You appear to have a long time horizon, which makes Roth IRA space especially valuable because the long-run tax-free growth can be hard to replace later.";
+  split = { debt: 25, roth: 50, cd: 5, stocks: 20 };
+} else if (
+  weightedApr <= assumptions.comparableReturn - 2 &&
+  lowInterestDebts.length === debts.length
+) {
+  strategy = "invest-first";
+  headline = "Pay debts normally and put most extra money into investing.";
+  why =
+    "Your debts are relatively low-cost compared with your expected long-term investing return, so keeping debt payments normal and investing most of your surplus is likely stronger.";
+  split = { debt: 20, roth: 35, cd: 10, stocks: 35 };
+}
 
   const topDebt = [...debts].sort((a, b) => b.apr - a.apr)[0] || null;
   const debtExtraAmount = (monthlyExtraCash * split.debt) / 100;
@@ -338,8 +393,8 @@ function buildAdvice(debts, assumptions, monthlyExtraCash, profile, rothData) {
 
   const allocationSummary = [
     { label: "Debt", percent: split.debt, amount: debtExtraAmount },
-    { label: "Roth IRA", percent: split.roth, amount: rothAmount },
-    { label: "CD / house fund", percent: split.cd, amount: cdAmount },
+    { label: "Roth / retirement", percent: split.roth, amount: rothAmount },
+    { label: "CD / emergency fund", percent: split.cd, amount: cdAmount },
     { label: "Stocks / taxable investing", percent: split.stocks, amount: stockAmount },
   ];
 
@@ -353,49 +408,66 @@ function buildAdvice(debts, assumptions, monthlyExtraCash, profile, rothData) {
             : "Keep making minimum payments on all debts while you improve cash flow.",
         ]
       : [
-          totalCurrent > totalMin
-            ? `You are already paying ${money(totalCurrent - totalMin)} above minimums.`
-            : "You are currently close to minimum payments, so extra cash allocation matters more.",
+          !emergencyFundReady
+            ? emergencyFundStillNeeded > 0
+              ? `Build your emergency fund first. Your saved plan says you still need about ${money(emergencyFundStillNeeded)}.`
+              : "Build your emergency fund first before investing heavily."
+            : "Your emergency fund is marked complete, so the advice can move on to debt payoff and investing.",
+          employerMatchAvailable
+            ? gettingFullMatch
+              ? `You appear to be contributing enough to capture the ${percent(employerMatchPercent)} employer match.`
+              : `Increase retirement contributions toward at least ${percent(employerMatchPercent)} to capture more employer match.`
+            : "No employer match is included in this recommendation.",
           topDebt
             ? `If you add extra debt payments, focus on ${topDebt.name} first because it has the highest APR at ${percent(topDebt.apr)}.`
             : "Add a debt before generating debt-specific advice.",
           rothAmount > 0
-            ? `Direct about ${money(rothAmount)} per month toward Roth IRA contributions${
-                rothRoomAnnual > 0
-                  ? ` until you use up roughly ${money(rothRoomAnnual)} of remaining annual room.`
-                  : "."
-              }`
-            : "No Roth contribution is prioritized in the current recommendation.",
+            ? `Direct about ${money(rothAmount)} per month toward Roth IRA or retirement contributions.`
+            : "No Roth or retirement contribution is prioritized in the current recommendation.",
           cdAmount > 0
-            ? `Set aside about ${money(cdAmount)} per month in CDs or another guaranteed savings vehicle${
-                homeSavingsPriority
-                  ? " to support a future home down payment"
-                  : " for stability and near-term goals"
-              }.`
-            : "No dedicated CD allocation is prioritized in the current recommendation.",
+            ? `Set aside about ${money(cdAmount)} per month in CDs, high-yield savings, or another guaranteed savings vehicle.`
+            : "No dedicated CD or emergency fund allocation is prioritized right now.",
           stockAmount > 0
-            ? `Invest about ${money(stockAmount)} per month in higher-growth assets after debt and Roth priorities are covered.`
+            ? `Invest about ${money(stockAmount)} per month in higher-growth taxable investments after debt, emergency fund, and retirement priorities are covered.`
             : "No extra stock allocation is prioritized right now.",
         ];
 
   const reasoning = [
     `Weighted average debt APR: ${percent(weightedApr)}.`,
-    `Risk-adjusted comparable investment return: ${percent(
-      assumptions.comparableReturn
-    )}.`,
-    `Projected interest on your current debt plan: ${money(
-      totalProjectedInterest
-    )}.`,
+    `Risk-adjusted comparable investment return: ${percent(assumptions.comparableReturn)}.`,
+    `Projected interest on your current debt plan: ${money(totalProjectedInterest)}.`,
+    highInterestDebtPresent
+      ? "High-interest debt is marked present, so the advice gives debt payoff more priority."
+      : "High-interest debt is not marked present, so investing can receive more consideration.",
+    emergencyFundReady
+      ? "Emergency fund is marked complete."
+      : emergencyFundStillNeeded > 0
+      ? `Emergency fund is not complete. Saved plan still needs ${money(
+          emergencyFundStillNeeded
+        )}, with an estimated ${emergencyFundMonthsToGoal} months to goal.`
+      : "Emergency fund is not marked complete, so safer savings is prioritized.",
+    hasEmployerRetirementPlan
+      ? `Employer retirement plan included. Employer match: ${percent(
+          employerMatchPercent
+        )}. Your contribution: ${percent(
+          retirementContributionPercent
+        )}. Vesting period: ${vestingYears || 0} years.`
+      : "No employer retirement plan is selected, so employer match is not included.",
+    employerMatchAvailable && !gettingFullMatch
+      ? "Because your contribution is below the employer match percentage, the advice protects some retirement allocation to avoid missing employer match money."
+      : employerMatchAvailable && gettingFullMatch
+      ? "Because you are already contributing enough for the employer match, extra money can be split between debt payoff, Roth, CDs, and stocks."
+      : "No employer match adjustment was applied.",
     age !== null
-      ? `Age considered in the recommendation: ${age}. Younger users with long time horizons may benefit more from protecting Roth IRA contribution space.`
+      ? `Age considered in the recommendation: ${age}. Younger users with long time horizons may benefit more from protecting retirement contribution space.`
       : "No age was found in the profile, so life-stage retirement prioritization is based mostly on timeline and risk profile.",
     hasHouse === false
       ? homeGoalYears !== null
-        ? `You do not appear to own a home, and your estimated home-buying timeline is about ${homeGoalYears} years, which can make guaranteed savings vehicles more useful for down-payment money.`
+        ? `You do not appear to own a home, and your estimated home-buying timeline is about ${homeGoalYears} years.`
         : "You do not appear to own a home, so the page may reserve some money for safer house-fund savings if your timeline is near or medium term."
       : hasHouse === true
-      ? "You appear to already own a home, so the advice leans less heavily toward down-payment savings vehicles."
-      : "No homeownership data was found, so the page uses only debt and investment profile signals for housing-related advice.",
+      ? "You appear to already own a home, so the advice leans less heavily toward down-payment savings."
+      : "No homeownership data was found, so housing-related advice is limited.",
   ];
 
   return {
@@ -418,7 +490,7 @@ function buildAdvice(debts, assumptions, monthlyExtraCash, profile, rothData) {
     reasoning,
     actionItems,
   };
-}
+}   
 
 function pageWrapStyle() {
   return {
@@ -490,6 +562,13 @@ function RecommendationBadge({ strategy }) {
   if (strategy === "cash-flow-first") {
     return <div style={badgeStyle("#fff7ed", "#c2410c")}>Cash-flow first</div>;
   }
+  if (strategy === "emergency-fund-first") {
+  return <div style={badgeStyle("#ecfdf5", "#047857")}>Emergency fund first</div>;
+}
+
+if (strategy === "employer-match-first") {
+  return <div style={badgeStyle("#eef2ff", "#4338ca")}>Employer match first</div>;
+}
   if (strategy === "pay-debt-first") {
     return <div style={badgeStyle("#fef2f2", "#b91c1c")}>Debt-first strategy</div>;
   }
@@ -503,6 +582,7 @@ function RecommendationBadge({ strategy }) {
     return <div style={badgeStyle("#fff7ed", "#c2410c")}>House-fund strategy</div>;
   }
   return <div style={badgeStyle("#f5f3ff", "#6d28d9")}>Mixed strategy</div>;
+  
 }
 
 function ProgressSplit({ debtPercent, rothPercent, cdPercent, stockPercent }) {
