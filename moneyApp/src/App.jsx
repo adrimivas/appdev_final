@@ -11,6 +11,7 @@ import CreateAcc from "./pages/createAcc";
 import Profile from "./pages/profile";
 import CalculatorPage from "./pages/calc";
 import Advice from "./pages/Advice";
+import InvestmentLinks from "./pages/InvestmentLinks";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "links", element: <Links /> },
       { path: "profile", element: <Profile /> },
       { path: "calculator", element: <CalculatorPage /> },
+      { path: "investment-links", element: <InvestmentLinks /> },
     ],
   },
 ]);
