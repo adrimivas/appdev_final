@@ -24,6 +24,15 @@ function getCurrentBalance(debt) {
   return Number(debt?.current_balance ?? debt?.balance ?? 0);
 }
 
+function hasMortgageDebt(debts) {
+  return debts.some((debt) =>
+    String(debt?.type || "")
+      .toLowerCase()
+      .trim()
+      .includes("mortgage")
+  );
+}
+
 function getInterestRate(debt) {
   return Number(debt?.interest_rate ?? 0);
 }
@@ -256,7 +265,7 @@ function buildAdvice(debts, assumptions, monthlyExtraCash, profile, rothData) {
   );
 
   const age = getAge(profile);
-  const hasHouse = getHasHouse(profile);
+  const hasHouse = hasMortgageDebt(debts) ? true : getHasHouse(profile);
   const homeGoalYears = getHomeGoalYears(profile);
   const retirementFocus = wantsRetirementFocus(profile);
 
