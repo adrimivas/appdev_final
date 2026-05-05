@@ -1,16 +1,48 @@
-# React + Vite
+Welcome to Got the Dough? ! We are so glad you are here and hope this tool serves you well. 
+Disclaimer: WE ARE NOT A CERTIFIED FINANCIAL ADVISER APPLICATION. We have made this tool to the best of our abilities and
+through researcg, but we are by no means professionals in this field. 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Setup
+To run this app, you will need to:
+- Install this entire project on your local computer
+- Run npm install in the moneyApp directory
+- Have 2 terminals running at the same time 
+    - 1. Run node server.js from financial_tool_app directory
+    - 2. Run npm run dev from moneyApp directory
 
-Currently, two official plugins are available:
+Features
+ Profile page where you will be able to see some of your financial stats like income, expense to income ratio, debt, and expenses. 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+ Advice page that generates custom advice regarding whether you should invest or pay off debt if you have some disposable income taking into account debt interest rates. 
 
-## React Compiler
+ Investments page that shows you projected growth of assets in custom period of time 
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+ Debt page that gives a thorough breakdown of all reported debts as well as an overview of monthly expenses
 
-## Expanding the ESLint configuration
+ Calculator page that has 3 functions: Debt Payoff Calculator, Monthly Budget Planner, and Emergeny Fund Calculator
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Architecture Overview
+  financial_tool_app 
+     |_
+     moneyApp 
+     node_modules
+        |_
+        src
+         |_
+         assets
+         components
+             |_
+             debts
+             expenses
+             investments
+         controllers
+         hooks
+         layout
+         models
+         pages
+         routes
+         services
+         utils
+
+
+    
