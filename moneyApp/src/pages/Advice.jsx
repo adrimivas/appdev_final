@@ -921,14 +921,14 @@ const monthlyIncome = income || profileIncome || annualMonthlyIncome;
                 </div>
                 <div style={metricCardStyle("#e5e7eb")}>
                   <div style={{ color: "#666", fontSize: 13 }}>
-                    Savings goal (taken from investments)
+                    Savings goal <br />(taken from investments)
                   </div>
                   <div style={{ fontWeight: 800, fontSize: 24, marginTop: 6 }}>
                     {money(cashFlow.plannedSavings)}
                   </div>
                 </div>
                 <div style={metricCardStyle("#e5e7eb")}>
-                  <div style={{ color: "#666", fontSize: 13 }}>Fun money</div>
+                  <div style={{ color: "#666", fontSize: 13 }}>Fun money <br />(enter in investments page)</div>
                   <div style={{ fontWeight: 800, fontSize: 24, marginTop: 6 }}>
                     {money(cashFlow.funMoney)}
                   </div>
