@@ -848,6 +848,12 @@ const monthlyIncome = income || profileIncome || annualMonthlyIncome;
               monthly money after bills, minimum debt payments, savings, and fun
               money are already accounted for.
             </p>
+            <p style={{ ...mutedStyle(), textAlign: "center", maxWidth: 800, margin: "0 auto" }}>
+  Disclaimer: The recommendations on this page are estimates based on your inputs and general financial guidelines. 
+  They are meant to help you think through decisions, not replace personalized advice. Your actual results may vary, 
+  and you should consult a financial professional for guidance tailored to your situation.
+</p>
+<br />
             <div style={{ display: "flex", justifyContent: "center" }}>
               <RecommendationBadge strategy={advice.strategy} />
             </div>
