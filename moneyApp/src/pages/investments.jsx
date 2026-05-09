@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import InvestmentProfileForm from "../components/investments/InvestmentProfileForm";
 import RecommendationSummary from "../components/investments/RecommendationSummary";
 import CdCard from "../components/investments/CdCard";
@@ -22,6 +23,7 @@ function getDebtLevel(totalDebt) {
 }
 
 export default function Investments() {
+  const navigate = useNavigate();
   const [profile, setProfile] = useSessionState("investment-profile", defaultInvestmentProfile);
   const [cdData, setCdData] = useSessionState("cd-data", defaultCdInputs);
   const [rothData, setRothData] = useSessionState("roth-data", defaultRothInputs);
@@ -122,6 +124,19 @@ export default function Investments() {
         <RothIraCard rothInputs={rothData} setRothInputs={setRothData} />
         <StocksCard stockInputs={stocksData} setStockInputs={setStocksData} />
       </div>
+      <button
+        onClick={() => navigate("/investment-links")}
+        style={{
+          padding: "10px 20px",
+          borderRadius: "8px",
+          background: "#b380e0",
+          color: "white",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        Useful Links
+      </button>
     </section>
   );
 }
