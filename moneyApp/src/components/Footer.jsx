@@ -2,7 +2,7 @@ export default function Footer() {
     return (
         <footer className="site-footer">
             <div className="container footer-inner">
-                <p>© 2026 Sweet Team Name's Money App</p>
+                <p>© 2026 Money Up, Not Funny Up's Money App</p>
             </div>
         </footer>
     );

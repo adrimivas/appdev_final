@@ -20,12 +20,6 @@ export default function Home() {
                 Track your finances and decide whether you want to invest or pay off debt faster.
               </p>
             </div>
-            <button
-              className="counter"
-              onClick={() => setCount((count) => count + 1)}
-            >
-              Count is {count}
-            </button>
           </section>
     
           <div className="ticks"></div>
