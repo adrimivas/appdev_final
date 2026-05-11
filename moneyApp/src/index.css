@@ -399,4 +399,21 @@ code {
   .investments-page h1 {
     font-size: 1.9rem;
   }
+
+  .profile-section {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .form-grid input,
+  .form-grid select {
+    width: 100%;
+    max-width: 320px;
+  }
 }

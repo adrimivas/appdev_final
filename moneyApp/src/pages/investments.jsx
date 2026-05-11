@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import InvestmentProfileForm from "../components/investments/InvestmentProfileForm";
 import RecommendationSummary from "../components/investments/RecommendationSummary";
+import StockExplorer from "../components/investments/StockExplorer";
 import CdCard from "../components/investments/CdCard";
 import RothIraCard from "../components/investments/RothIraCard";
 import StocksCard from "../components/investments/StocksCard";
@@ -56,7 +57,7 @@ export default function Investments() {
     <section className="page investments-page">
       <div className = "investments-hero">
         <h1>Investments</h1>
-        <p text-style: center>
+        <p text-style: center="true">
         Compare low-risk savings, retirement investing, and stock exposure using your current
         financial situation.
         </p>
@@ -70,6 +71,9 @@ export default function Investments() {
         <RothIraCard rothInputs={rothData} setRothInputs={setRothData} />
         <StocksCard stockInputs={stocksData} setStockInputs={setStocksData} />
       </div>
+
+      <StockExplorer stockInputs={stocksData} setStockInputs={setStocksData} />
+
       <button
         onClick={() => navigate("/investment-links")}
         style={{
