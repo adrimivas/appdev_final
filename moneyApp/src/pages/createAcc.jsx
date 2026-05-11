@@ -27,6 +27,7 @@ function CreateAcc() {
     password: "",
     date_of_birth: "",
     income: "",
+    incomeFrequency: "yearly",
     expenses: {
       monthly: [{ ...emptyMonthlyExpense }],
     },
@@ -142,7 +143,10 @@ function CreateAcc() {
       },
       email: formData.email.trim(),
       password: formData.password,
-      income: Number(formData.income) || 0,
+      income: 
+        formData.incomeFrequency === "monthly"
+    ? (Number(formData.income) || 0) * 12
+    : Number(formData.income) || 0,
       expenses: {
         monthly: formData.expenses.monthly
           .filter(
@@ -346,21 +350,51 @@ function CreateAcc() {
             <div>
               <h2>Step 2</h2>
 
-              <label>Income</label>
-              <br />
-              <input
-                type="number"
-                name="income"
-                value={formData.income}
-                onChange={(e) => {
-                  clearFieldValidity(e);
-                  handleBasicChange(e);
-                }}
-                onInvalid={setRequiredMessage}
-                required
-              />
-              <br />
-              <br />
+              <label>Income (after tax)</label>
+<br />
+<input
+  type="number"
+  name="income"
+  value={formData.income}
+  onChange={(e) => {
+    clearFieldValidity(e);
+    handleBasicChange(e);
+  }}
+  onInvalid={setRequiredMessage}
+  required
+/>
+<br />
+<br />
+
+<label>Is this income monthly or yearly?</label>
+<br />
+<select
+  name="incomeFrequency"
+  value={formData.incomeFrequency}
+  onChange={handleBasicChange}
+>
+  <option value="yearly">Yearly</option>
+  <option value="monthly">Monthly</option>
+</select>
+
+{formData.income !== "" && formData.incomeFrequency === "monthly" && (
+  <p style={{ color: "#666", fontSize: 14 }}>
+    This will be saved as yearly income:{" "}
+    {Number(formData.income || 0).toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    })}
+    {" × 12 = "}
+    {(Number(formData.income || 0) * 12).toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    })}
+  </p>
+)}
+<br />
+<br />
 
               <h3>Monthly Expenses</h3>
 
