@@ -20,7 +20,7 @@ export function formatCandleData(candleJSON) {
         return [];
     }
     return candleJSON.t.map((timestamp, index) => ({
-        date: new Date(timestampe * 1000).toLocaleDateString(),
+        date: new Date(timestamp * 1000).toLocaleDateString(),
         close: candleJSON.c[index],
         high: candleJSON.h[index],
         low: candleJSON.l[index],

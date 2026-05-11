@@ -123,11 +123,7 @@ export default function InvestmentProfileForm({
 
         {!profile.emergencyFundReady && (
           <p style={{ gridColumn: "1 / -1", color: "#b45309", margin: 0 }}>
-<<<<<<< HEAD
-            If fund isint built, build one in the calculator page.
-=======
             If fund isn't built, build one in the calculator page.
->>>>>>> 96ca488 (fixed typo in InvestmentProfileForm)
           </p>
         )}
 
